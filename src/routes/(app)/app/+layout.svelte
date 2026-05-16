@@ -1,7 +1,9 @@
 <script>
 	import favicon from '$lib/assets/favicon.svg';
 	import AppSidebar from '$lib/components/app-sidebar.svelte';
-	import * as Sidebar from '$lib/components/ui/sid$lib/components/shadcn/sidebar/index.js= $props();
+	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+
+	let { children } = $props();
 </script>
 
 <svelte:head>
