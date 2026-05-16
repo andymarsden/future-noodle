@@ -1,5 +1,5 @@
 <script>
-     import AppHeader from "$lib/components/app-header.svelte";
+     import AppHeader from "$lib/components/sidenav/app-header.svelte";
 </script>
 <AppHeader
     crumbs={[
