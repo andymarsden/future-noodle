@@ -36,6 +36,7 @@
     let activeFlow = $state(null);
     let conversationId = $state(null);
     let lastAssistantMessageID = $state(null);
+
     //#endregion
 
     //#region DOM refs
@@ -92,8 +93,8 @@
         event.preventDefault();
 
         isThinking = true;
-        //activeFlow = 445;
-        activeFlow = {id: "flow-1", name: "Test Flow"};
+
+        activeFlow = {id: "flow-1", name: "Test Flow", current_step: "step-1"};
         const userMessage = await chat.message.create({content: {text:draft},role: "user",activeFlow: activeFlow,conversationId: conversationId});
         const thinkingMessage = await chat.message.create({content: {text: ""},role: "thinking",conversationId: conversationId});
 
@@ -108,8 +109,6 @@
         isThinking = false;
         await tick(); // wait for DOM to re-enable the textarea
         textareaRef?.focus();
-
-
     }
 </script>
 
