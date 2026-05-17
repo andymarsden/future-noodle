@@ -22,6 +22,7 @@
     import MessageUser from "$lib/chat/components/message-user.svelte";
     import MessageAssistant from "$lib/chat/components/message-assistant.svelte";
     import MessageThinking from "$lib/chat/components/message-thinking.svelte";
+    import { Message } from "$lib/classes/Message";
 
     //#region Layout limits
     const MAX_TEXTAREA_HEIGHT = 224;
@@ -40,8 +41,6 @@
     //#endregion
 
     //#region DOM refs
-    // // //  let messageListRef = $state(null);
-    // let messageEndRef = $state(null);
     let textareaRef = $state(null);
     //#endregion
 
@@ -91,12 +90,16 @@
 
     async function handleSend(event) {
         event.preventDefault();
-
+        draft = draft.trim();
+        if (!draft) return;
+        
         isThinking = true;
 
         //activeFlow = {id: "flow-1", name: "Test Flow", current_step: "step-1"};
-        const userMessage = await chat.message.create({content: {text:draft},role: "user",activeFlow: activeFlow,conversationId: conversationId});
-        const thinkingMessage = await chat.message.create({content: {text: ""},role: "thinking",conversationId: conversationId});
+
+        const userMessage = new Message({content: {text:draft},role: "user",activeFlow: activeFlow,conversationId: conversationId});
+
+        const thinkingMessage = new Message({content: {text: ""},role: "thinking",conversationId: conversationId});
 
         messages = await chat.addMessageToList(messages,userMessage,thinkingMessage,);
 
@@ -133,7 +136,7 @@
         <Badge
             variant="outline"
             class="pointer-events-none absolute right-4 top-4 hidden bg-blue-500 text-white dark:bg-blue-600 normal-case text-[12px] tracking-normal sm:inline-flex"
-            >{activeFlow ? "flow mode" : "echo mode"} {activeFlow?.name}</Badge
+            >{activeFlow ? "flow mode" : "echo mode"} {activeFlow?.name} {activeFlow?.current_step}</Badge
         >
 
         <!-- <div

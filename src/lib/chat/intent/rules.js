@@ -1,3 +1,4 @@
+//intent rules
 export const rules = [
     {
         id: "timestamp",
@@ -57,7 +58,7 @@ export const rules = [
         async run({ query }) {
             return {
                 text: `qrios ${query}`,
-                activeFlow: {name:"qrios-flow",id:"qrios-flow-id"}
+                activeFlow: {id:"onboard"}
             };
         }
     }

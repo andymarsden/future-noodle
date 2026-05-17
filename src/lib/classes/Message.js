@@ -5,10 +5,14 @@ export class Message {
     content = {},
     role = "user",
     state = "pending",
-    conversationId = null,
+    conversationId,
     activeFlow = null,
     createdAt = new Date(),
+    options = []
   } = {}) {
+    if (!conversationId) {
+      throw new Error("conversationId is required");
+    }
     this.id = id;
     this.content = content;
     this.role = role;
@@ -16,5 +20,18 @@ export class Message {
     this.conversationId = conversationId;
     this.activeFlow = activeFlow;
     this.createdAt = createdAt;
+    this.options = options;
+  }
+}
+
+export class Option {
+  constructor({
+    id = generateId(),
+    label = "",
+    value = "",
+  } = {}) {
+    this.id = id;
+    this.label = label;
+    this.value = value;
   }
 }
