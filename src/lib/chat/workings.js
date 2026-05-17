@@ -1,39 +1,29 @@
 import { generateId, wait } from "$lib/utils";
 import { intent } from "./intent/engine";
 
+
+// a message sould have content
+
 export const chat = {
     message: {
-        async create({ id = generateId(), content = "", role = "user", state = "pending", conversationId = "", activeFlow = null } = {}) {
-            return { id, content, role, state, conversationId, activeFlow };
+        async create({ id = generateId(), content = {}, role = "user", state = "pending", conversationId = "", activeFlow = null, createdAt = new Date() } = {}) {
+            return { id, content, role, state, conversationId, activeFlow, createdAt };
         },
 
         async send({ message } = {}) {
-            //await wait(1000);
-
-            //Decide what to do. if no active flow work out the intent and find a flow to trigger, if active flow, send the message to the flow and get the response. For now we will just return a dummy response after a delay.
 
             if (!message?.content) {
-                return chat.message.create({
-                    content: "Please enter a message.",
-                    role: "assistant",
-                    activeFlow: message?.activeFlow ?? null
-                });
+                return chat.message.create({content: { text: "Please enter a message." },role: "assistant",activeFlow: message?.activeFlow ?? null,conversationId: message?.conversationId ?? null  });
             }
 
-            const response = await intent.detect(message.content);
+            const response = await intent.detect(message.content.text);
 
-            const content = response.success ? response.response?.text || "" : response.error?.message || "Something went wrong.";
+            const content = response.success ? response.content?.text || "" : response.error?.message || "Something went wrong.";
 
-            return chat.message.create({
-                content,
-                role: "assistant",
-                activeFlow: message.activeFlow
-            });
+            return chat.message.create({content: { text: content },role: "assistant",activeFlow: message.activeFlow,conversationId: message?.conversationId ?? null});
         },
     },
 
-    //TODO - addMessageToList should be in a separate file, as it is not related to chat, but rather to the way we manage messages in the UI. We can move it to a utils file or something like that.
-    //TODO - Think about renaming
     async addMessageToList(messages, ...newMessages) {
         return messages = [...messages, ...newMessages];
     },

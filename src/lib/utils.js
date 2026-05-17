@@ -40,4 +40,9 @@ export function generateId() {
 	return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+export function shortId(id, length = 8) {
+	if (typeof id !== "string") return "";
+	return id.slice(0, length);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

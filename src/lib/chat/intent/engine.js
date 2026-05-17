@@ -18,27 +18,22 @@ export const intent = {
                 },
                 intent: null,
                 payload: null,
-                response: null
+                content: null
             };
         }
 
-        const payload = intent.extract
-            ? intent.extract(normalized)
-            : {};
+        const payload = intent.extract ? intent.extract(normalized): {};
 
         try {
             const response = await intent.run(payload);
-            console.log("Intent execution result: ", intent, response);
             return {
                 success: true,
                 error: null,
                 intent: intent.id,
                 payload,
-                response
+                content: response
             };
         } catch (error) {
-            console.log("Intent execution result: ", intent,error);
-            console.error("Error executing intent: ", error);
             return {
                 success: false,
                 error: {
@@ -47,7 +42,7 @@ export const intent = {
                 },
                 intent: null,
                 payload: null,
-                response: null
+                content: null
             };
         }
 

@@ -1,17 +1,17 @@
 <script>
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { renderAssistantMarkdown } from "$lib/utils/markdown.js";
-
+import { shortId } from "$lib/utils.js";
 	// onOptionSelect is called with option.value when a choice button is clicked.
-	let { message, onOptionSelect, isLastMessageWithOptions = true } = $props();
-	const renderedContent = $derived(renderAssistantMarkdown(message.content));
+	let { message, onOptionSelect, isLastMessageWithOptions = true, lastAssistantMessageID } = $props();
+	const renderedContent = $derived(renderAssistantMarkdown(message.content.text));
 </script>
 
 <article class="text-foreground text-[15px] leading-7">
 	<p
 		class="text-muted-foreground mb-2 text-xs font-medium uppercase tracking-wide"
 	>
-		Assistant
+		Assistant  • {shortId(message.id)} • {shortId(message.conversationId)} • {lastAssistantMessageID === message.id ? "last message" : ""}
 	</p>
 	<div
 		class="assistant-markdown wrap-break-word"

@@ -34,6 +34,8 @@
     let draft = $state("");
     let isThinking = $state(false);
     let activeFlow = $state(null);
+    let conversationId = $state(null);
+    let lastAssistantMessageID = $state(null);
     //#endregion
 
     //#region DOM refs
@@ -78,8 +80,10 @@
 
     //#region Lifecycle
     onMount(async () => {
+        conversationId = generateId();
         textareaRef?.focus();
         autoResizeTextarea();
+        //If we are setting up an assistant message make sure we set the lastAssistantMessageID so that the UI can scroll to it when it updates with the response.
     });
 
     //#endregion
@@ -89,18 +93,20 @@
 
         isThinking = true;
         //activeFlow = 445;
-        const userMessage = await chat.message.create({content: draft,role: "user",activeFlow: activeFlow});
-        const thinkingMessage = await chat.message.create({content: "",role: "thinking",});
+        activeFlow = {id: "flow-1", name: "Test Flow"};
+        const userMessage = await chat.message.create({content: {text:draft},role: "user",activeFlow: activeFlow,conversationId: conversationId});
+        const thinkingMessage = await chat.message.create({content: {text: ""},role: "thinking",conversationId: conversationId});
 
         messages = await chat.addMessageToList(messages,userMessage,thinkingMessage,);
 
         const assistantMessage = await chat.message.send({ message: userMessage});
+        lastAssistantMessageID = assistantMessage.id;
 
         messages = await chat.updateMessage(messages,assistantMessage, thinkingMessage.id,);
 
         draft = "";
-                isThinking = false;
-                await tick(); // wait for DOM to re-enable the textarea
+        isThinking = false;
+        await tick(); // wait for DOM to re-enable the textarea
         textareaRef?.focus();
 
 
@@ -145,14 +151,14 @@
                 {#each messages as message, index (message.id)}
                     {#if message.role === "user"}
                         <div class="pb-12">
-                            <MessageUser {message} {formatTimestamp} />
+                            <MessageUser {message} {formatTimestamp} {lastAssistantMessageID} />
                         </div>
-                    {:else if message.role === "assistant" && message.card?.type === "album"}
-                        <MessageAlbumCard {message} />
+                    <!-- {:else if message.role === "assistant" && message.card?.type === "album"}
+                        <MessageAlbumCard {message} /> -->
                     {:else if message.role === "thinking"}
                         <MessageThinking {message} />
                     {:else if message.role === "assistant"}
-                        <MessageAssistant {message} />
+                        <MessageAssistant {message} {lastAssistantMessageID} />
                     {/if}
                 {/each}
                 <!-- {#each messages as message, index (message.id)}

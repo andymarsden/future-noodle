@@ -1,11 +1,11 @@
 <script>
-	let { message, formatTimestamp, user = "User" } = $props();
-
+	let { message, formatTimestamp, user = "User", lastAssistantMessageID } = $props();
+	import { shortId } from "$lib/utils.js";
 </script>
 
 <article class="flex justify-end">
 	<div class="bg-muted/70 text-foreground max-w-[85%] rounded-3xl border px-4 py-3 text-sm shadow-xs">
-		<p class="whitespace-pre-wrap wrap-break-word">{message.content}</p>
+		<p class="whitespace-pre-wrap wrap-break-word">{message.content.text}</p>
 		<div class="mt-2 flex items-center justify-end gap-1.5">
 			{#if message.isValidated === true}
 				<span
@@ -59,7 +59,7 @@
 				</span>
 			{/if}
 			<!-- <p class="text-muted-foreground text-[11px]">Andy • {formatTimestamp(message.createdAt)}  •  <a href="#"><u>edit</u></a></p> -->
-			<p class="text-muted-foreground text-[11px]">{user} • {formatTimestamp(message.createdAt)} {message.id}</p>
+			<p class="text-muted-foreground text-[11px]">{user} • {formatTimestamp(message.createdAt)} • {shortId(message.id)} • {shortId(message.conversationId)} • {lastAssistantMessageID === message.id ? "last message" : ""}</p>
 		</div>
 	</div>
 </article>

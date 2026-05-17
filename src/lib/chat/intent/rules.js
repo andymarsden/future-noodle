@@ -23,7 +23,7 @@ export const rules = [
 
     {
         id: "play-music",
-    permissions: ["staff"],
+        permissions: ["staff"],
         match(text) {
             return text.startsWith("play ");
         },
