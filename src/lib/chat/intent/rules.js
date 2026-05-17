@@ -40,4 +40,25 @@ export const rules = [
             };
         }
     }
+    ,
+    {
+        id: "start-qrios",
+        permissions: ["staff"],
+        match(text) {
+            return text.startsWith("qrios");
+        },
+
+        extract(text) {
+            return {
+                query: text.replace(/^qrios\s+/, "")
+            };
+        },
+
+        async run({ query }) {
+            return {
+                text: `qrios ${query}`,
+                activeFlow: {name:"qrios-flow",id:"qrios-flow-id"}
+            };
+        }
+    }
 ];

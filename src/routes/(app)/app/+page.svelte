@@ -94,7 +94,7 @@
 
         isThinking = true;
 
-        activeFlow = {id: "flow-1", name: "Test Flow", current_step: "step-1"};
+        //activeFlow = {id: "flow-1", name: "Test Flow", current_step: "step-1"};
         const userMessage = await chat.message.create({content: {text:draft},role: "user",activeFlow: activeFlow,conversationId: conversationId});
         const thinkingMessage = await chat.message.create({content: {text: ""},role: "thinking",conversationId: conversationId});
 
@@ -102,6 +102,8 @@
 
         const assistantMessage = await chat.message.send({ message: userMessage});
         lastAssistantMessageID = assistantMessage.id;
+        activeFlow = assistantMessage.activeFlow;
+
 
         messages = await chat.updateMessage(messages,assistantMessage, thinkingMessage.id,);
 
@@ -131,7 +133,7 @@
         <Badge
             variant="outline"
             class="pointer-events-none absolute right-4 top-4 hidden bg-blue-500 text-white dark:bg-blue-600 normal-case text-[12px] tracking-normal sm:inline-flex"
-            >{activeFlow ? "flow mode" : "echo mode"}</Badge
+            >{activeFlow ? "flow mode" : "echo mode"} {activeFlow?.name}</Badge
         >
 
         <!-- <div
