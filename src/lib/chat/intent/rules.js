@@ -81,5 +81,25 @@ export const rules = [
                 activeFlow: {id:"rugby"}
             };
         }
+    },
+    {
+        id: "football-flow",
+        permissions: ["staff"],
+        match(text) {
+            return text.startsWith("football");
+        },
+
+        // extract(text) {
+        //     return {
+        //         //query: text.replace(/^qrios\s+/, "")
+        //     };
+        // },
+
+        async run({ query }) {
+            return {
+                //text: `qrios ${query}`,
+                activeFlow: {id:"football"}
+            };
+        }
     }
 ];
