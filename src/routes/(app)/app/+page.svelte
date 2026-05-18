@@ -101,14 +101,14 @@
 
         const thinkingMessage = new Message({content: {text: ""},role: "thinking",conversationId: conversationId});
 
-        messages = await chat.addMessageToList(messages,userMessage,thinkingMessage,);
+        messages = await chat.addMessageToList(messages,userMessage,thinkingMessage);
 
         const assistantMessage = await chat.message.send({ message: userMessage});
         lastAssistantMessageID = assistantMessage.id;
         activeFlow = assistantMessage.activeFlow;
 
 
-        messages = await chat.updateMessage(messages,assistantMessage, thinkingMessage.id,);
+        messages = await chat.updateMessage(messages,assistantMessage, thinkingMessage.id);
 
         draft = "";
         isThinking = false;

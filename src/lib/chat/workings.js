@@ -69,6 +69,22 @@ export const flow = {
         //Determine next step based on user input and flow definition (for simplicity, we just go to the next step in the array)
         //In a real implementation, you would have more complex logic here to handle different types of questions, branching flows, etc.
 
+
+        //FROM AI
+        // const currentStepId = activeFlow.current_step;
+        // const currentStep = activeFlow.steps?.find(s => s.id === currentStepId);
+
+        // if (currentStep) {
+        //     currentStep.answer = userInput;
+        // }
+
+        // activeFlow.answers = {
+        //     ...(activeFlow.answers || {}),
+        //     [currentStepId]: userInput
+        // };
+
+        // console.log("answers", activeFlow.answers);
+
         let nextStep = this.getNextStep(activeFlow.id, activeFlow.current_step);
         activeFlow.current_step = nextStep.id;
         //let messageText = `The questions is ${nextStep.question},  You are in ${activeFlow.id}, currently at step ${activeFlow.current_step }. You said: ${userInput}.`;

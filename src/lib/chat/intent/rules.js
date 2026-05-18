@@ -61,5 +61,25 @@ export const rules = [
                 activeFlow: {id:"onboard"}
             };
         }
+    },
+    {
+        id: "rugby-flow",
+        permissions: ["staff"],
+        match(text) {
+            return text.startsWith("rugby");
+        },
+
+        extract(text) {
+            return {
+                //query: text.replace(/^qrios\s+/, "")
+            };
+        },
+
+        async run({ query }) {
+            return {
+                //text: `qrios ${query}`,
+                activeFlow: {id:"rugby"}
+            };
+        }
     }
 ];
