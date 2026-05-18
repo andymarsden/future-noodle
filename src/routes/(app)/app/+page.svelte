@@ -97,7 +97,7 @@
 
         //activeFlow = {id: "flow-1", name: "Test Flow", current_step: "step-1"};
 
-        const userMessage = new Message({content: {text:draft},role: "user",activeFlow: activeFlow,conversationId: conversationId});
+        const userMessage = new Message({content: {text:draft},activeFlow: activeFlow,conversationId: conversationId});
 
         const thinkingMessage = new Message({content: {text: ""},role: "thinking",conversationId: conversationId});
 
