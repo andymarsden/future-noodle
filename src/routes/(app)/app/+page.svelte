@@ -126,8 +126,8 @@
         lastAssistantMessageID = assistantMessage.id;
         activeFlow = assistantMessage.activeFlow;
 
-
-        messages = await chat.updateMessage(messages,assistantMessage, thinkingMessage.id);
+        messages = await chat.updateMessage(messages, { ...userMessage }, userMessage.id);
+        messages = await chat.updateMessage(messages, assistantMessage, thinkingMessage.id);
         await scrollToBottom();
 
         draft = "";

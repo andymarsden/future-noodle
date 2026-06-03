@@ -1,0 +1,1 @@
+- [] Look at the iunetractivty of the message now we are passing it though. ( //Nice! This is because the message is interactive. message.isValidated = true;)

@@ -1,5 +1,6 @@
 export const onboardCommands = {
     async capitalise(text) {
+        console.log("Capitalising", text);
         return String(text.answer ?? "").toUpperCase();
     },
     async validateWelcome(text) {

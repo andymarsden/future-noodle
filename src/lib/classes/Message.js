@@ -8,7 +8,8 @@ export class Message {
     conversationId,
     activeFlow = null,
     createdAt = new Date(),
-    options = []
+    options = [],
+    isValidated = null,
   } = {}) {
     if (!conversationId) {
       throw new Error("conversationId is required");
@@ -21,6 +22,7 @@ export class Message {
     this.activeFlow = activeFlow;
     this.createdAt = createdAt;
     this.options = options;
+    this.isValidated = isValidated;
   }
 }
 

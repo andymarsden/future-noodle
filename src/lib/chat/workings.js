@@ -13,6 +13,11 @@ export const chat = {
 
             if(!message.activeFlow) {
 
+                //Nice! This is because the message is interactive.
+                message.isValidated = true;
+                //message.content.text = "This changed?";
+                
+                
                 if (!message?.content) {
                     return new Message({content: { text: "Please enter a message." },role: "assistant",activeFlow: message?.activeFlow ?? null,conversationId: message?.conversationId ?? null  });
                 }
@@ -35,7 +40,7 @@ export const chat = {
             }
             else
             {
-                return await flow.process(message.activeFlow, message.content.text, message?.conversationId ?? null);
+                return await flow.process(message.activeFlow, message.content.text, message?.conversationId ?? null, message);
             }
 
         },
@@ -62,7 +67,7 @@ export const flow = {
     getById(flowId) {
         return flowRegistry[flowId];
     },
-    async process(activeFlow, userInput, conversationId) {
+    async process(activeFlow, userInput, conversationId, userMessage) {
         //TODO process the flow based on the current step and user input
 
 
@@ -88,24 +93,61 @@ export const flow = {
         // console.log("answers", activeFlow.answers);
         const currentStepId = activeFlow.current_step;
         const currentStep = activeFlow.steps?.find(s => s.id === currentStepId);
-        currentStep.answer = userInput;
 
+        if (!currentStep) {
+            return new Message({content: { text: "This flow step could not be found." },role: "assistant",activeFlow: activeFlow,conversationId: conversationId  });
+        }
+        currentStep.answer = userInput; 
+        
+        //#region Validate and transform
+        if (currentStep?.validation) {
+            try {
+                await executeCommand(currentStep.validation, {
+                    answer: userInput,
+                    stepId: currentStep.id,
+                    step: currentStep,
+                    flow: activeFlow,
+                });
+                userMessage.isValidated = true;
+            } catch (error) {
+                userMessage.isValidated = false;
+                return new Message({
+                    content: { text: error?.message || "Your answer did not pass validation." },
+                    role: "assistant",
+                    activeFlow: activeFlow,
+                    conversationId: conversationId,
+                });
+            }
+        } else {
+            userMessage.isValidated = true;
+        }
 
-        let nextStep = this.getNextStep(activeFlow.id, activeFlow.current_step);
+        if (currentStep?.transform) {
+            const transformedAnswer = await executeCommand(currentStep?.transform, {
+                answer: currentStep.answer,
+                stepId: currentStep.id,
+            });
+            console.log('User Message',userMessage);
+            console.log('Transformed Answer',transformedAnswer);
+            userMessage.content.text = transformedAnswer;
+        }
+        //#endregion
+        
+        
+
+        const nextStep = this.getNextStep(activeFlow.id, activeFlow.current_step);
+
+        if (!nextStep) {
+            return new Message({content: { text: "This flow is finished." },role: "assistant",activeFlow: activeFlow,conversationId: conversationId  });
+        }
+
         activeFlow.current_step = nextStep.id;
 
         //transform step:
         //validate:
         //action:
 
-        if (currentStep?.transform) {
-                const transformedAnswer = await executeCommand(currentStep?.transform, {
-                    answer: currentStep.answer,
-                    stepId: currentStep.id,
-                });
-        console.log("transformedAnswer", transformedAnswer);
-            nextStep.question = transformedAnswer;
-        }
+
 
         //let messageText = `The questions is ${nextStep.question},  You are in ${activeFlow.id}, currently at step ${activeFlow.current_step }. You said: ${userInput}.`;
         return new Message({content: { text: nextStep.question },role: "assistant",activeFlow: activeFlow,conversationId: conversationId  });
@@ -126,6 +168,8 @@ export const flow = {
         activeFlow.current_step = activeFlow.steps[0].id;
 
         let messageText = activeFlow.steps[0].question;
+
+
         return new Message({content: { text: messageText },role: "assistant",activeFlow: activeFlow,conversationId: conversationId  });
     }
 
