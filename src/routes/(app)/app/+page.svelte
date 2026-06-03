@@ -42,6 +42,7 @@
 
     //#region DOM refs
     let textareaRef = $state(null);
+    let messageListRef = $state(null);
     //#endregion
 
     //#region UI helpers
@@ -65,6 +66,22 @@
         event.preventDefault();
         void handleSend(event);
     }
+
+    async function scrollToBottom() {
+        await tick();
+        // if (!messageListRef) return;
+
+        // messageListRef.scrollTo({
+        //     top: messageListRef.scrollHeight + 150,
+        //     behavior: "smooth",
+        // });
+
+        //TODO: find a better way to handle this. This is a bandaid for the fact that the message list doesn't always grow in height as expected when new messages come in, which causes the scroll to not reach the bottom. This ensures we always scroll to the bottom, but it's not ideal.
+      window.scrollTo({
+    top: document.body.scrollHeight,
+    behavior: "smooth"
+});
+    }
     //#endregion
 
     //#region Reactive updates
@@ -83,6 +100,7 @@
         conversationId = generateId();
         textareaRef?.focus();
         autoResizeTextarea();
+        await scrollToBottom();
         //If we are setting up an assistant message make sure we set the lastAssistantMessageID so that the UI can scroll to it when it updates with the response.
     });
 
@@ -102,6 +120,7 @@
         const thinkingMessage = new Message({content: {text: ""},role: "thinking",conversationId: conversationId});
 
         messages = await chat.addMessageToList(messages,userMessage,thinkingMessage);
+        await scrollToBottom();
 
         const assistantMessage = await chat.message.send({ message: userMessage});
         lastAssistantMessageID = assistantMessage.id;
@@ -109,6 +128,7 @@
 
 
         messages = await chat.updateMessage(messages,assistantMessage, thinkingMessage.id);
+        await scrollToBottom();
 
         draft = "";
         isThinking = false;
@@ -144,9 +164,14 @@
             class="min-h-0 flex-1 overflow-y-auto"
             aria-live="polite"
         > -->
-        <div class="min-h-0 flex-1 overflow-y-auto" aria-live="polite">
+        <div
+            bind:this={messageListRef}
+            class="min-h-0 flex-1 overflow-y-auto scroll-smooth"
+            aria-live="polite"
+            id="message-list"
+        >
             <div
-                class="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-8 pb-28 md:px-6 md:pb-36"
+                class="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-8 pb-24 md:px-6 md:pb-24"
             >
                 {#if messages.length === 0}
                     <p class="text-muted-foreground text-sm">Loading...</p>
