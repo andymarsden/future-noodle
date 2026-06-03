@@ -9,6 +9,7 @@ export const chat = {
     message: {
         async send({ message } = {}) {
             await wait(500); //simulate thinking time
+
             if(!message.activeFlow) {
 
                 if (!message?.content) {
@@ -84,11 +85,16 @@ export const flow = {
         // };
 
         // console.log("answers", activeFlow.answers);
+        const currentStepId = activeFlow.current_step;
+        const currentStep = activeFlow.steps?.find(s => s.id === currentStepId);
+        currentStep.answer = userInput;
+
 
         let nextStep = this.getNextStep(activeFlow.id, activeFlow.current_step);
         activeFlow.current_step = nextStep.id;
+        debugger;
         //let messageText = `The questions is ${nextStep.question},  You are in ${activeFlow.id}, currently at step ${activeFlow.current_step }. You said: ${userInput}.`;
-
+        console.log('ACTIVE FLOW',activeFlow)
         return new Message({content: { text: nextStep.question },role: "assistant",activeFlow: activeFlow,conversationId: conversationId  });
     },
     getNextStep(flowId, currentStepId) {

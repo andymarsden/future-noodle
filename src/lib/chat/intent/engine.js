@@ -9,7 +9,7 @@ export const intent = {
         const intent = rules.find(intent =>
             intent.match(normalized)
         );
-
+ 
         if (!intent) {
             return {
                 success: false,
