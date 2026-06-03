@@ -217,7 +217,7 @@
         </div>
 
         <div
-            class="from-background via-background/95 to-background sticky bottom-0 border-t bg-linear-to-t px-3 pb-3 pt-4 md:px-6 md:pb-6"
+            class="from-background via-background/95 to-background sticky bottom-0 border-t bg-linear-to-t px-3 pb-3 pt-4 md:px-6 md:pb-2"
         >
             <form
                 class="relative mx-auto w-full max-w-3xl"
