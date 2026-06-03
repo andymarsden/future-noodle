@@ -10,7 +10,8 @@ export const onboardFlow = {
             question: "Welcome to Future Noodle! Let's get started with a few questions to personalize your experience.",
             description: "Greet the user and introduce the onboarding process.",
             options: [],
-            next_step: "dietary_preferences"
+            next_step: "dietary_preferences",
+            validation:"onboard.validateWelcome"
         },
         {
             id: "dietary_preferences",
