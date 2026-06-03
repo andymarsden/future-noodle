@@ -10,6 +10,8 @@ export class Message {
     createdAt = new Date(),
     options = [],
     isValidated = null,
+    memoryId = null,
+    summary = null,
   } = {}) {
     if (!conversationId) {
       throw new Error("conversationId is required");
@@ -23,6 +25,8 @@ export class Message {
     this.createdAt = createdAt;
     this.options = options;
     this.isValidated = isValidated;
+    this.memoryId = memoryId;
+    this.summary = summary;
   }
 }
 

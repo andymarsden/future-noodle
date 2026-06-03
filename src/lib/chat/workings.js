@@ -4,7 +4,8 @@ import { generateId, wait } from "$lib/utils";
 import { intent } from "./intent/engine";
 import {Message } from "$lib/classes/Message";
 import { flowRegistry } from "$lib/chat/flows/engine";
-  import { executeCommand } from "$lib/chat/commands/execute";
+import { executeCommand } from "$lib/chat/commands/execute";
+import { saveConversationMemory } from "$lib/services/conversation-memory";
 
 export const chat = {
     message: {
@@ -61,6 +62,17 @@ export const chat = {
     }
 }
 
+
+function buildFlowSummary(activeFlow) {
+    const answers = (activeFlow?.steps ?? [])
+        .filter((step) => typeof step?.answer !== "undefined" && step.answer !== null && String(step.answer).trim() !== "")
+        .map((step) => `- ${step.name || step.id}: ${String(step.answer)}`);
+
+    const headline = `Flow "${activeFlow?.name || activeFlow?.id || "conversation"}" completed.`;
+    const details = answers.length ? answers.join("\n") : "- No answers were captured in the flow.";
+
+    return `${headline}\n\n${details}`;
+}
 
 export const flow = {
 
@@ -138,7 +150,29 @@ export const flow = {
         const nextStep = this.getNextStep(activeFlow.id, activeFlow.current_step);
 
         if (!nextStep) {
-            return new Message({content: { text: "This flow is finished." },role: "assistant",activeFlow: activeFlow,conversationId: conversationId  });
+            const summary = buildFlowSummary(activeFlow);
+            const savedMemory = saveConversationMemory({
+                conversationId,
+                flowId: activeFlow?.id ?? null,
+                flowName: activeFlow?.name ?? null,
+                summary,
+                answers: (activeFlow?.steps ?? []).filter((step) => typeof step.answer !== "undefined" && step.answer !== null).map((step) => ({
+                    id: step.id,
+                    name: step.name || step.id,
+                    answer: step.answer,
+                })),
+            });
+
+            return new Message({
+                content: {
+                    text: `This flow is finished.\n\nSummary saved to temporary memory with ID ${savedMemory.id}.\n\n${summary}`,
+                },
+                role: "assistant",
+                activeFlow: null,
+                conversationId,
+                memoryId: savedMemory.id,
+                summary,
+            });
         }
 
         activeFlow.current_step = nextStep.id;
