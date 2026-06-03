@@ -7,7 +7,7 @@ export const rugbyFlow = {
             id: "welcome",
             index: 0,
             name: "Welcome Step",
-            question: "Welcome to Rugby flow! L",
+            question: "Welcome to Rugby flow!",
             description: "Greet the user and introduce the onboarding process.",
             options: [],
 
@@ -16,7 +16,7 @@ export const rugbyFlow = {
             id: "next",
             index: 1,
             name: "next",
-            question: "Who do you support",
+            question: "Who do you support?",
             description: "",
             options: [],
         }]

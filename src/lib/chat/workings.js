@@ -4,6 +4,7 @@ import { generateId, wait } from "$lib/utils";
 import { intent } from "./intent/engine";
 import {Message } from "$lib/classes/Message";
 import { flowRegistry } from "$lib/chat/flows/engine";
+  import { executeCommand } from "$lib/chat/commands/execute";
 
 export const chat = {
     message: {
@@ -92,9 +93,21 @@ export const flow = {
 
         let nextStep = this.getNextStep(activeFlow.id, activeFlow.current_step);
         activeFlow.current_step = nextStep.id;
-        debugger;
+
+        //transform step:
+        //validate:
+        //action:
+
+        if (currentStep?.transform) {
+                const transformedAnswer = await executeCommand(currentStep?.transform, {
+                    answer: currentStep.answer,
+                    stepId: currentStep.id,
+                });
+        console.log("transformedAnswer", transformedAnswer);
+            nextStep.question = transformedAnswer;
+        }
+
         //let messageText = `The questions is ${nextStep.question},  You are in ${activeFlow.id}, currently at step ${activeFlow.current_step }. You said: ${userInput}.`;
-        console.log('ACTIVE FLOW',activeFlow)
         return new Message({content: { text: nextStep.question },role: "assistant",activeFlow: activeFlow,conversationId: conversationId  });
     },
     getNextStep(flowId, currentStepId) {
