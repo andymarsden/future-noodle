@@ -12,6 +12,8 @@ export const qriosFormFlow = {
             index: 1,
             id:"when_attended",
             question: "When did you attend the talking point?",
+            //tranform:"util.textToDate" //this is a transform function that will convert the text input into a date format, we can use this to standardize date inputs and make it easier to work with dates in the flow. The function should be defined in the utilCommands and should return a date string in the format of YYYY-MM-DD.
+        transform:"util.textToDate"
         }, 
         {
             index: 2,
