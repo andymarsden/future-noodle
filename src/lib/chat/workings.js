@@ -162,7 +162,18 @@ export const flow = {
         }
         //#endregion
         
-        
+
+
+        let commandResult = null;
+
+        if (currentStep?.command) {
+            commandResult = await executeCommand(currentStep.command, {
+                answer: currentStep.answer,
+                stepId: currentStep.id,
+                step: currentStep,
+                flow: activeFlow,
+            });
+        }
 
         const nextStep = this.getNextStep(activeFlow.id, activeFlow.current_step);
 
@@ -201,10 +212,17 @@ export const flow = {
         //action:
 
 
+console.log("Command Result", commandResult);
+        const messageText = typeof commandResult?.pre_text === "string" && commandResult.pre_text.trim().length > 0
+            ? `${commandResult.pre_text.trim()}\n\n${nextStep.question}`
+            : nextStep.question;
 
-        //let messageText = `The questions is ${nextStep.question},  You are in ${activeFlow.id}, currently at step ${activeFlow.current_step }. You said: ${userInput}.`;
+if(commandResult?.data){
+    userMessage.content.text = commandResult.data;
+}
+
         return new Message({
-            content: { text: nextStep.question },
+            content: { text: messageText },
             role: "assistant",
             activeFlow,
             conversationId,

@@ -19,6 +19,7 @@ export const qriosFormFlow = {
             index: 2,
             id:"reason_for_visit",
             question: "What brought you to the talking point today?",
+            
         },
         {   
             index: 3,
@@ -36,6 +37,7 @@ export const qriosFormFlow = {
             index: 5,
             id:"demographics_postcode",
             question: "What is your postcode?",
+            command: "util.getPostcodeInfo"
         },
         {
             index: 6,
