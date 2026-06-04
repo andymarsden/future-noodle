@@ -14,7 +14,9 @@ import { shortId } from "$lib/utils.js";
 	<p
 		class="text-muted-foreground mb-2 text-xs font-medium uppercase tracking-wide"
 	>
-		Assistant  • {shortId(message.id)} • {shortId(message.conversationId)} • {lastAssistantMessageID === message.id ? "last message" : ""} • {isLastMessage}
+		<!-- Assistant  • {shortId(message.id)} • {shortId(message.conversationId)} • {lastAssistantMessageID === message.id ? "last message" : ""} • {isLastMessage}
+	 -->
+			Qrios Assistant
 	</p>
 	<div
 		class="assistant-markdown wrap-break-word"
