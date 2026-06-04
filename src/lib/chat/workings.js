@@ -30,7 +30,7 @@ export const chat = {
                 //did the intent trigger an flow?
                 if(response.content?.activeFlow)
                 {
-                    return flow.start(response.content.activeFlow.id, message?.conversationId ?? null);
+                    return await flow.start(response.content.activeFlow.id, message?.conversationId ?? null);
                 }
                 else
                 {
@@ -216,10 +216,14 @@ export const flow = {
 
         return activeFlow.steps[currentIndex + 1] || null;
     },
-    start(id, conversationId) {
+    async start(id, conversationId) {
 
         let activeFlow = this.getById(id);
         activeFlow.current_step = activeFlow.steps[0].id;
+
+        if (conversationId) {
+            await executeCommand("onboard.updateConversationRoute", { conversationId });
+        }
 
         let messageText = activeFlow.steps[0].question;
 

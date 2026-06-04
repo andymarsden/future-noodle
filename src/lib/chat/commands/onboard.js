@@ -9,5 +9,19 @@ export const onboardCommands = {
             throw new Error("Please mention 'noodle' to proceed.");
         }
         return true;
-    }
+    },
+    async updateConversationRoute({ conversationId } = {}) {
+        console.log("Updating conversation route with ID:", conversationId);
+        if (!conversationId || typeof window === "undefined") {
+            return conversationId;
+        }
+
+        const nextPath = `/app/${conversationId}`;
+
+        if (window.location.pathname !== nextPath) {
+            window.history.replaceState(window.history.state, "", nextPath);
+        }
+
+        return conversationId;
+    },
 }

@@ -11,6 +11,7 @@ export const onboardFlow = {
             description: "Greet the user and introduce the onboarding process.",
             options: [],
             next_step: "dietary_preferences",
+            transform: "onboard.updateConversationRoute",
             validation:"onboard.validateWelcome"
         },
         {
