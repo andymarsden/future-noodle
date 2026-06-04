@@ -23,21 +23,26 @@ export const chat = {
                     return new Message({content: { text: "Please enter a message." },role: "assistant",activeFlow: message?.activeFlow ?? null,conversationId: message?.conversationId ?? null  });
                 }
  
-                const response = await intent.detect(message.content.text);
+                const response = await intent.detect(message.content.text, message?.conversationId ?? null);
 
                 //TODO no intent - try AI response? or just default answer? maybe a fallback intent that always matches?
 
+                const assistantMessage = response.content instanceof Message
+                    ? response.content
+                    : new Message({
+                        content: response.content ?? { text: "" },
+                        role: "assistant",
+                        activeFlow: response.content?.activeFlow ?? null,
+                        conversationId: message?.conversationId ?? null,
+                        options: response.content?.options ?? [],
+                    });
+
                 //did the intent trigger an flow?
-                if(response.content?.activeFlow)
-                {
-                    return await flow.start(response.content.activeFlow.id, message?.conversationId ?? null);
+                if (assistantMessage.activeFlow) {
+                    return await flow.start(assistantMessage.activeFlow.id, assistantMessage.conversationId ?? null);
                 }
-                else
-                {
-                    const text = response.success ? response.content?.text || "" : response.error?.message || "Something went wrong.";
-                
-                    return new Message({content: { text: text },role: "assistant",activeFlow: response.content?.activeFlow,conversationId: message?.conversationId ?? null});
-                }
+
+                return assistantMessage;
             }
             else
             {

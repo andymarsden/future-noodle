@@ -175,10 +175,10 @@
 
 <AppHeader
     crumbs={[
-        { label: "Admin", href: "/app" },
-        { label: "Sandbox", href: "/app/sandbox" },
+        { label: "Sandbox", href: "/app" },
+        // { label: "Sandbox", href: "/app/sandbox" },
     ]}
-    currentPage="Porto"
+    currentPage="Qrios"
 />
 
 <main
