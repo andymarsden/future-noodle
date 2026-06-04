@@ -243,7 +243,8 @@
             id="message-list"
         >
             <div
-                class="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-8 pb-24 md:px-6 md:pb-24"
+                class="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-8 md:px-6"
+                style="padding-bottom: clamp(10rem, 50vh, 24rem);"
             >
                 {#if messages.length === 0}
                     <div class="flex items-center justify-center py-6">
