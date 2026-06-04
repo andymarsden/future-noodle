@@ -2,6 +2,7 @@
     //Svelte
 
     import { onMount, tick } from "svelte";
+    import { goto } from "$app/navigation";
     import { page } from "$app/stores";
 
     //utils
@@ -107,6 +108,17 @@
 
     //#region Lifecycle
 
+    async function startFreshConversation() {
+        conversationId = generateShortId();
+        messages = [];
+        activeFlow = null;
+        lastAssistantMessageID = null;
+
+        saveConversation(conversationId, messages, activeFlow);
+        await triggerStartupIntent();
+        await goto("/app", { replaceState: true });
+    }
+
     async function triggerStartupIntent() {
         const startupMessage = new Message({
             content: { text: "/qrios-startup" },
@@ -130,8 +142,7 @@
             activeFlow = stored.activeFlow ?? null;
             lastAssistantMessageID = messages.filter((message) => message.role === "assistant").at(-1)?.id ?? null;
         } else {
-            conversationId = generateShortId();
-            await triggerStartupIntent();
+            await startFreshConversation();
         }
 
         textareaRef?.focus();
@@ -144,6 +155,16 @@
     async function sendMessage(text) {
         const nextDraft = String(text ?? "").trim();
         if (!nextDraft || isThinking) return;
+
+        if (nextDraft === "/clear" || nextDraft === "/restart") {
+            isThinking = true;
+            await startFreshConversation();
+            draft = "";
+            isThinking = false;
+            await tick();
+            textareaRef?.focus();
+            return;
+        }
 
         isThinking = true;
 
