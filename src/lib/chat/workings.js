@@ -180,6 +180,8 @@ export const flow = {
         //#region If no next step, end the flow and save summary to memory
         if (!nextStep) {
             const summary = buildFlowSummary(activeFlow);
+            const isQriosFlow = String(activeFlow?.id || "").startsWith("qrios");
+            const summarySections = isQriosFlow ? buildFlowSectionSummary(activeFlow) : [];
             const savedMemory = saveConversationMemory({
                 id:conversationId,
                 flowId: activeFlow?.id ?? null,
@@ -194,13 +196,15 @@ export const flow = {
 
             return new Message({
                 content: {
-                    text: `This flow is finished.\n\nSummary saved to temporary memory with ID ${savedMemory.id}.\n\n${summary}`,
+                    text: `This flow is finished.\n\nSummary saved to temporary memory with ID ${savedMemory.id}.`,
                 },
                 role: "assistant",
                 activeFlow: null,
                 conversationId,
                 memoryId: savedMemory.id,
                 summary,
+                summarySections,
+                flowId: activeFlow?.id ?? null,
             });
         }
         //#endregion
@@ -272,4 +276,49 @@ function buildFlowSummary(activeFlow) {
     const details = answers.length ? answers.join("\n") : "- No answers were captured in the flow.";
 
     return `${headline}\n\n${details}`;
+}
+
+function buildFlowSectionSummary(activeFlow) {
+    const sections = new Map();
+
+    for (const step of activeFlow?.steps ?? []) {
+        if (typeof step?.answer === "undefined" || step.answer === null) continue;
+
+        const answerText = String(step.answer).trim();
+        if (!answerText) continue;
+
+        const sectionId = step.section || "general";
+
+        if (!sections.has(sectionId)) {
+            sections.set(sectionId, {
+                id: sectionId,
+                title: formatSectionLabel(sectionId),
+                answers: [],
+            });
+        }
+
+        sections.get(sectionId).answers.push({
+            id: step.id,
+            label: formatStepLabel(step),
+            answer: answerText,
+        });
+    }
+
+    return Array.from(sections.values());
+}
+
+function formatSectionLabel(sectionId) {
+    return String(sectionId)
+        .split("_")
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(" ");
+}
+
+function formatStepLabel(step) {
+    if (step?.name) return step.name;
+
+    return String(step?.id || "question")
+        .split("_")
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(" ");
 }
