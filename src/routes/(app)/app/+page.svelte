@@ -107,6 +107,20 @@
 
     //#region Lifecycle
 
+    async function triggerStartupIntent() {
+        const startupMessage = new Message({
+            content: { text: "/qrios-startup" },
+            role: "user",
+            conversationId,
+        });
+
+        const assistantMessage = await chat.message.send({ message: startupMessage });
+
+        messages = await chat.addMessageToList(messages, assistantMessage);
+        lastAssistantMessageID = assistantMessage.id;
+        activeFlow = assistantMessage.activeFlow ?? activeFlow;
+        saveConversation(conversationId, messages, activeFlow);
+    }
 
     onMount(async () => {
         if (routeConversationId) {
@@ -117,6 +131,7 @@
             lastAssistantMessageID = messages.filter((message) => message.role === "assistant").at(-1)?.id ?? null;
         } else {
             conversationId = generateShortId();
+            await triggerStartupIntent();
         }
 
         textareaRef?.focus();
