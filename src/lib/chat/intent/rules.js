@@ -24,7 +24,35 @@ export const rules = [
             };
         }
     },
+    {
+        id: "qrios-startup",
+        permissions: ["staff"],
 
+        match(text) {
+            return text === "/qrios-startup" || text.startsWith("/qrios-startup ");
+        },
+
+        extract(text) {
+            return {
+                message: text.replace(/^\/qrios-startup\s*/, "")
+            };
+        },
+
+        async run({ message }) {
+            return {
+                content: {
+                    text: message || "Qrios startup mode active. Type /qrios-startup followed by text to start."
+                },
+                options: [
+                    { id: "qrios", label: "New form", value: "qrios" },
+                    { id: "vegetarian", label: "Vegetarian", value: "vegetarian" },
+                    { id: "gluten_free", label: "Gluten-Free", value: "gluten_free" },
+                    { id: "none", label: "No Preferences", value: "none", button_type: "fancy" }
+                ],
+                type: "qrios-startup"
+            };
+        }
+    },
     {
         id: "timestamp",
         permissions: ["staff"],

@@ -211,14 +211,18 @@
             >
                 {#if messages.length === 0}
                     <div class="flex items-center justify-center py-6">
-                        {#if routeConversationId}
+                        <!-- {#if routeConversationId}
                             <span
                                 class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-current border-r-transparent"
                                 aria-label="Loading conversation"
                             ></span>
                         {:else}
                             <p class="text-muted-foreground text-sm">Loading...</p>
-                        {/if}
+                        {/if} -->
+                         <span
+                                class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-current border-r-transparent"
+                                aria-label="Loading conversation"
+                            ></span>
                     </div>
                 {/if}
 

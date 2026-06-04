@@ -2,6 +2,18 @@
 import { Message } from "$lib/classes/Message";
 import { rules } from "./rules.js";
 
+function normalizeOptions(options) {
+    if (!Array.isArray(options)) return [];
+
+    return options.map((option, index) => ({
+        id: option?.id ?? `${index}`,
+        label: option?.label ?? option?.text ?? option?.value ?? option?.id ?? "",
+        value: option?.value ?? option?.id ?? option?.text ?? option?.label ?? "",
+        button_type: option?.button_type,
+        ...option,
+    }));
+}
+
 //Converts various response formats into a standardized Message instance
 function toMessage(response, conversationId) {
     if (response instanceof Message) {
@@ -15,7 +27,7 @@ function toMessage(response, conversationId) {
             content: response.content ?? { text: "" },
             role: response.role ?? "assistant",
             activeFlow: response.activeFlow ?? null,
-            options: Array.isArray(response.options) ? response.options : [],
+            options: normalizeOptions(response.options),
         });
     }
 
@@ -24,7 +36,7 @@ function toMessage(response, conversationId) {
         role: "assistant",
         content: typeof response === "object" && response !== null ? response : { text: response ?? "" },
         activeFlow: response?.activeFlow ?? null,
-        options: Array.isArray(response?.options) ? response.options : [],
+        options: normalizeOptions(response?.options),
     });
 }
 
