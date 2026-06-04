@@ -1,5 +1,6 @@
 <script>
 	import { Button } from "$lib/components/ui/button/index.js";
+	import DownloadIcon from "@lucide/svelte/icons/download";
 
 	let { message } = $props();
 	let conversationUrl = $derived("http://stat.to/app/" + message.conversationId);
@@ -99,12 +100,13 @@
 			</div>
 
 			<Button
-				variant="outline"
+				variant="default"
 				size="sm"
-				class="cursor-pointer"
+				class="cursor-pointer bg-emerald-600 text-white hover:bg-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-400"
 				onclick={downloadSummaryPdf}
 				disabled={isDownloading}
 			>
+				<DownloadIcon class="mr-1.5 size-4" />
 				{isDownloading ? "Preparing PDF..." : "Download PDF"}
 			</Button>
 		</div>
