@@ -88,7 +88,7 @@
 		position: relative;
 		padding-left: 0.625rem;
 		padding-right: 0.625rem;
-		border: 2px solid transparent;
+		border: 1px solid transparent;
 		border-radius: 8px;
 
 		color: var(--glass-text);
