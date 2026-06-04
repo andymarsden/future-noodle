@@ -43,7 +43,6 @@
 					</button>
 				{:else if option.button_type === "secondary"}
 					<Button
-						variant="ghost"
 						size="sm"
 						class="rounded-md cursor-pointer"
 						onclick={() => onOptionSelect?.(option.value)}
