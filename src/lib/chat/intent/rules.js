@@ -41,13 +41,13 @@ export const rules = [
         async run({ message }) {
             return {
                 content: {
-                    text: message || "Qrios startup mode active. Type /qrios-startup followed by text to start."
+                    text: message || "Welcome to QRIOS what would you like to do today?"
                 },
                 options: [
                     { id: "qrios", label: "New form", value: "qrios" },
-                    { id: "vegetarian", label: "Vegetarian", value: "vegetarian" },
-                    { id: "gluten_free", label: "Gluten-Free", value: "gluten_free" },
-                    { id: "none", label: "No Preferences", value: "none", button_type: "fancy" }
+                    { id: "vegetarian", label: "Follow Up", value: "/follow-up" },
+                    { id: "gluten_free", label: "Nuevo formulario", value: "/nuevo-formulario" },
+                    { id: "none", label: "View Data", value: "/view_data", button_type: "fancy" }
                 ],
                 type: "qrios-startup"
             };
@@ -111,7 +111,8 @@ export const rules = [
         async run({ query }) {
             return {
                 text: `qrios ${query}`,
-                activeFlow: {id:"onboard"}
+                //activeFlow: {id:"onboard"} qrios_form
+                activeFlow: {id:"qrios_form"}
             };
         }
     },
