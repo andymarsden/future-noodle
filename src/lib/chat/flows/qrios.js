@@ -8,15 +8,16 @@ export const qriosFormFlow = {
             question: "### Details\n\n\n---\n\n\nThese questions help us understand where and when the conversation is happening, and what brought someone here today. They also tell us whether this is a first visit about an issue or part of something ongoing, which helps us understand how and when support is being accessed.\n\n---\n\n **Questions**\n\nWhich hub did you attend?"
             ,options: ["[a] Chester -Tomorrows Women", "[b] Chester Blacon", "[c] Chester City Centre", "[d] Ellesmere Port", "[e] Frodsham", "[f] Helsby", "[g] Lache", "[h] Malpas", "[i] Neston", "[j] Northwich", "[k] Tarporley", "[l] Winsford", "[z] Skip"]
         ,section: "details",
-        isSectionStart: true
+        isSectionStart: true,
+        default: "Today"
         },
         {
             index: 1,
             id:"when_attended",
             question: "When did you attend the talking point?",
             //tranform:"util.textToDate" //this is a transform function that will convert the text input into a date format, we can use this to standardize date inputs and make it easier to work with dates in the flow. The function should be defined in the utilCommands and should return a date string in the format of YYYY-MM-DD.
-        transform:"util.textToDate"
-        ,options: ["[z] Skip"]
+        transform:"util.textToDate",
+        default: "Today"
         ,section: "details"
         }, 
         {

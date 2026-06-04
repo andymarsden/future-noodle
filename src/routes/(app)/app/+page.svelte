@@ -142,6 +142,16 @@
             messages = Array.isArray(stored.messages) ? stored.messages : [];
             activeFlow = stored.activeFlow ?? null;
             lastAssistantMessageID = messages.filter((message) => message.role === "assistant").at(-1)?.id ?? null;
+
+            const lastMessage = messages.at(-1);
+            const isSummaryMessage =
+                lastMessage?.role === "assistant" &&
+                Array.isArray(lastMessage?.summarySections) &&
+                lastMessage.summarySections.length > 0;
+
+            if (isSummaryMessage) {
+                await triggerStartupIntent();
+            }
         } else {
             await startFreshConversation();
         }
