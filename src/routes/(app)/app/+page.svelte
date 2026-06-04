@@ -17,7 +17,8 @@
     import { Textarea } from "$lib/components/ui/textarea/index.js";
 
     //chat functionality
-    import { chat, flow } from "$lib/chat/workings";
+    import { chat } from "$lib/chat/workings";
+    import { loadConversation, saveConversation } from "$lib/services/conversation-storage";
 
     import MessageUser from "$lib/chat/components/message-user.svelte";
     import MessageAssistant from "$lib/chat/components/message-assistant.svelte";
@@ -105,11 +106,21 @@
 
     //#region Lifecycle
     onMount(async () => {
-        conversationId = generateId();
+        const routeConversationId = $page.params.conversationId ?? null;
+
+        if (routeConversationId) {
+            conversationId = routeConversationId;
+            const stored = loadConversation(routeConversationId);
+            messages = Array.isArray(stored.messages) ? stored.messages : [];
+            activeFlow = stored.activeFlow ?? null;
+            lastAssistantMessageID = messages.filter((message) => message.role === "assistant").at(-1)?.id ?? null;
+        } else {
+            conversationId = generateId();
+        }
+
         textareaRef?.focus();
         autoResizeTextarea();
         await scrollToBottom();
-        //If we are setting up an assistant message make sure we set the lastAssistantMessageID so that the UI can scroll to it when it updates with the response.
     });
 
     //#endregion
@@ -142,6 +153,7 @@
 
         messages = await chat.updateMessage(messages, { ...userMessage }, userMessage.id);
         messages = await chat.updateMessage(messages, assistantMessage, thinkingMessage.id);
+        saveConversation(conversationId, messages, activeFlow);
         await scrollToBottom();
 
         draft = "";
