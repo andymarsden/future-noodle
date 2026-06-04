@@ -38,6 +38,7 @@
     let activeFlow = $state(null);
     let conversationId = $state(null);
     let lastAssistantMessageID = $state(null);
+    let routeConversationId = $derived($page.params.conversationId ?? null);
     // let lastAssistantMessageWithOptionsIndex = $derived(
     //     messages.reduce((lastIndex, message, index) => {
     //         if (message.role === "assistant" && Array.isArray(message.options) && message.options.length > 0) {
@@ -108,7 +109,6 @@
 
 
     onMount(async () => {
-        const routeConversationId = $page.params.conversationId ?? null;
         if (routeConversationId) {
             conversationId = routeConversationId;
             const stored = loadConversation(routeConversationId);
@@ -210,7 +210,16 @@
                 class="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-8 pb-24 md:px-6 md:pb-24"
             >
                 {#if messages.length === 0}
-                    <p class="text-muted-foreground text-sm">Loading...</p>
+                    <div class="flex items-center justify-center py-6">
+                        {#if routeConversationId}
+                            <span
+                                class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-current border-r-transparent"
+                                aria-label="Loading conversation"
+                            ></span>
+                        {:else}
+                            <p class="text-muted-foreground text-sm">Loading...</p>
+                        {/if}
+                    </div>
                 {/if}
 
                 {#each messages as message, index (message.id)}
