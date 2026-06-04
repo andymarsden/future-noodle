@@ -53,6 +53,34 @@ export const rules = [
             };
         }
     },
+
+{
+        id: "qrios-followup",
+        permissions: ["staff"],
+
+        match(text) {
+            return text === "/qrios-followup" || text.startsWith("/qrios-followup ");
+        },
+
+        extract(text) {
+            return {
+                message: text.replace(/^\/qrios-followup\s*/, "")
+            };
+        },
+
+        async run({ message }) {
+            return {
+                content: {
+                    text: message || "Welcome back to QRIOS! What would you like to do today?"
+                },
+                options: [
+                    { id: "qrios", label: "New form", value: "qrios" },
+                    { id: "vegetarian", label: "Follow Up", value: "/follow-up", button_type: "fancy" },
+                ]
+            };
+        }
+    },
+
     {
         id: "timestamp",
         permissions: ["staff"],

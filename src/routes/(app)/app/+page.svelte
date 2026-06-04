@@ -135,6 +135,23 @@
         saveConversation(conversationId, messages, activeFlow);
     }
 
+//triggerFollowUpIntent
+
+async function triggerFollowUpIntent() {
+        const followUpMessage = new Message({
+            content: { text: "/qrios-followup" },
+            role: "user",
+            conversationId,
+        });
+
+        const assistantMessage = await chat.message.send({ message: followUpMessage });
+
+        messages = await chat.addMessageToList(messages, assistantMessage);
+        lastAssistantMessageID = assistantMessage.id;
+        activeFlow = assistantMessage.activeFlow ?? activeFlow;
+        saveConversation(conversationId, messages, activeFlow);
+    }
+
     onMount(async () => {
         if (routeConversationId) {
             conversationId = routeConversationId;
@@ -150,7 +167,7 @@
                 lastMessage.summarySections.length > 0;
 
             if (isSummaryMessage) {
-                await triggerStartupIntent();
+                await triggerFollowUpIntent();
             }
         } else {
             await startFreshConversation();
