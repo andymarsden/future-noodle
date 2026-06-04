@@ -3,8 +3,7 @@
 	import MoonIcon from "@lucide/svelte/icons/moon";
 	import SunIcon from "@lucide/svelte/icons/sun";
 	import { Button } from "$lib/components/ui/button/index.js";
-	import { THEMES, THEME_EVENT, getActiveTheme, readStoredTheme, toggleTheme } from "$lib/services/theme.js";
-
+import { THEMES, THEME_EVENT, THEME_STORAGE_KEY, applyTheme, getActiveTheme, readStoredTheme, toggleTheme } from "$lib/services/theme.js";
 	let { class: className = "" } = $props();
 	let theme = $state(THEMES.LIGHT);
 
@@ -17,14 +16,20 @@
 	}
 
 	onMount(() => {
-		theme = readStoredTheme() ?? getActiveTheme();
+		const storedTheme = readStoredTheme();
+		if (storedTheme) {
+			applyTheme(storedTheme, { persist: false });
+			theme = storedTheme;
+		} else {
+			theme = getActiveTheme();
+		}
 
 		const handleThemeChange = (event) => {
 			theme = event.detail?.theme ?? getActiveTheme();
 		};
 
 		const handleStorage = (event) => {
-			if (event.key !== "porto-theme") return;
+			if (event.key !== THEME_STORAGE_KEY) return;
 			syncThemeFromDom();
 		};
 
