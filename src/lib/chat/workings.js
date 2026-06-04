@@ -74,10 +74,13 @@ function normalizeOptions(step) {
 
     return step.options.map((option, index) => {
         if (typeof option === "string") {
+            const isSkipOption = option.trim().toLowerCase() === "[z] skip";
+
             return {
                 id: `${step.id || "option"}-${index}`,
                 label: option,
                 value: option,
+                button_type: isSkipOption ? "secondary" : undefined,
             };
         }
 
