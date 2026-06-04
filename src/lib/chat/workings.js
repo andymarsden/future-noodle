@@ -156,9 +156,18 @@ export const flow = {
                 answer: currentStep.answer,
                 stepId: currentStep.id,
             });
+            const normalizedTransformedAnswer =
+                transformedAnswer && typeof transformedAnswer === "object" && "data" in transformedAnswer
+                    ? transformedAnswer.data
+                    : transformedAnswer;
+
+            if (normalizedTransformedAnswer !== null && typeof normalizedTransformedAnswer !== "undefined") {
+                currentStep.answer = normalizedTransformedAnswer;
+                userMessage.content.text = String(normalizedTransformedAnswer);
+            }
+
             console.log('User Message',userMessage);
             console.log('Transformed Answer',transformedAnswer);
-            userMessage.content.text = transformedAnswer;
         }
         //#endregion
         
@@ -221,9 +230,10 @@ console.log("Command Result", commandResult);
             ? `${commandResult.pre_text.trim()}\n\n${nextStep.question}`
             : nextStep.question;
 
-if(commandResult?.data){
-    userMessage.content.text = commandResult.data;
-}
+        if (commandResult?.data !== null && typeof commandResult?.data !== "undefined") {
+            currentStep.answer = commandResult.data;
+            userMessage.content.text = String(commandResult.data);
+        }
 
         return new Message({
             content: { text: messageText },
