@@ -45,4 +45,20 @@ export function shortId(id, length = 8) {
 	return id.slice(0, length);
 }
 
+export function generateShortId() {
+    const letters = "abcdefghijklmnpqrstuvwxyz";
+    const chars = "abcdefghijklmnpqrstuvwxyz";
+
+    const randomLetter = () => letters[Math.floor(Math.random() * letters.length)];
+    const randomDigit = () => Math.floor(Math.random() * 10);
+    const randomChar = () => chars[Math.floor(Math.random() * chars.length)];
+
+    return (
+        randomLetter() +
+        randomLetter() +
+        randomDigit() +
+        randomDigit() +
+        randomChar()
+    );
+} 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -26,15 +26,17 @@ function writeAllConversations(conversations) {
 }
 
 export function saveConversation(conversationId = generateId(), messages = [], activeFlow = null) {
+  const normalizedConversationId = conversationId || generateId();
+
   const entry = {
-    id: conversationId,
+    id: normalizedConversationId,
     messages: Array.isArray(messages) ? messages : [],
     activeFlow,
     updatedAt: new Date().toISOString(),
   };
 
   const conversations = readAllConversations();
-  const next = [entry, ...conversations.filter((item) => item.id !== conversationId)];
+  const next = [entry, ...conversations.filter((item) => item.id !== normalizedConversationId)];
   writeAllConversations(next);
 
   return entry;

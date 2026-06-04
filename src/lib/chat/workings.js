@@ -165,7 +165,7 @@ export const flow = {
         if (!nextStep) {
             const summary = buildFlowSummary(activeFlow);
             const savedMemory = saveConversationMemory({
-                conversationId,
+                id:conversationId,
                 flowId: activeFlow?.id ?? null,
                 flowName: activeFlow?.name ?? null,
                 summary,

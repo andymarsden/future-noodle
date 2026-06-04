@@ -5,7 +5,7 @@
     import { page } from "$app/stores";
 
     //utils
-    import { formatTimestamp, wait, generateId } from "$lib/utils.js";
+    import { formatTimestamp, wait, generateId, generateShortId } from "$lib/utils.js";
 
     import AppHeader from "$lib/components/sidenav/app-header.svelte";
 
@@ -105,9 +105,10 @@
     //#endregion
 
     //#region Lifecycle
+
+
     onMount(async () => {
         const routeConversationId = $page.params.conversationId ?? null;
-
         if (routeConversationId) {
             conversationId = routeConversationId;
             const stored = loadConversation(routeConversationId);
@@ -115,7 +116,7 @@
             activeFlow = stored.activeFlow ?? null;
             lastAssistantMessageID = messages.filter((message) => message.role === "assistant").at(-1)?.id ?? null;
         } else {
-            conversationId = generateId();
+            conversationId = generateShortId();
         }
 
         textareaRef?.focus();
