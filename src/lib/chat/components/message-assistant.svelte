@@ -3,15 +3,18 @@
 	import { renderAssistantMarkdown } from "$lib/utils/markdown.js";
 import { shortId } from "$lib/utils.js";
 	// onOptionSelect is called with option.value when a choice button is clicked.
-	let { message, onOptionSelect, isLastMessageWithOptions = true, lastAssistantMessageID } = $props();
+	let { message, onOptionSelect,  lastAssistantMessageID } = $props();
 	const renderedContent = $derived(renderAssistantMarkdown(message.content.text));
+
+	const isLastMessage = $derived(lastAssistantMessageID === message.id);
+
 </script>
 
 <article class="text-foreground text-[15px] leading-7">
 	<p
 		class="text-muted-foreground mb-2 text-xs font-medium uppercase tracking-wide"
 	>
-		Assistant  • {shortId(message.id)} • {shortId(message.conversationId)} • {lastAssistantMessageID === message.id ? "last message" : ""}
+		Assistant  • {shortId(message.id)} • {shortId(message.conversationId)} • {lastAssistantMessageID === message.id ? "last message" : ""} • {isLastMessage}
 	</p>
 	<div
 		class="assistant-markdown wrap-break-word"
@@ -28,8 +31,8 @@ import { shortId } from "$lib/utils.js";
 					<button 
 						class="glass-border-button" 
 						onclick={() => onOptionSelect?.(option.value)}
-						disabled={!isLastMessageWithOptions}
-						style={!isLastMessageWithOptions ? 'opacity: 0.5; cursor: not-allowed;' : ''}
+						disabled={!isLastMessage}
+						style={!isLastMessage ? 'opacity: 0.5; cursor: not-allowed;' : ''}
 					> 
 						{option.label} 
 					</button>
@@ -40,7 +43,7 @@ import { shortId } from "$lib/utils.js";
 						size="sm"
 						class="rounded-md cursor-pointer"
 						onclick={() => onOptionSelect?.(option.value)}
-						disabled={!isLastMessageWithOptions}
+						disabled={!isLastMessage}
 					>
 						{option.label}
 					</Button>

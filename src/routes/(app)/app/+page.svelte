@@ -37,6 +37,14 @@
     let activeFlow = $state(null);
     let conversationId = $state(null);
     let lastAssistantMessageID = $state(null);
+    // let lastAssistantMessageWithOptionsIndex = $derived(
+    //     messages.reduce((lastIndex, message, index) => {
+    //         if (message.role === "assistant" && Array.isArray(message.options) && message.options.length > 0) {
+    //             return index;
+    //         }
+    //         return lastIndex;
+    //     }, -1),
+    // );
 
     //#endregion
 
@@ -106,23 +114,29 @@
 
     //#endregion
 
-    async function handleSend(event) {
-        event.preventDefault();
-        draft = draft.trim();
-        if (!draft) return;
-        
+    async function sendMessage(text) {
+        const nextDraft = String(text ?? "").trim();
+        if (!nextDraft || isThinking) return;
+
         isThinking = true;
 
-        //activeFlow = {id: "flow-1", name: "Test Flow", current_step: "step-1"};
+        const userMessage = new Message({
+            content: { text: nextDraft },
+            role: "user",
+            activeFlow,
+            conversationId,
+        });
 
-        const userMessage = new Message({content: {text:draft},role: "user",activeFlow: activeFlow,conversationId: conversationId});
+        const thinkingMessage = new Message({
+            content: { text: "" },
+            role: "thinking",
+            conversationId,
+        });
 
-        const thinkingMessage = new Message({content: {text: ""},role: "thinking",conversationId: conversationId});
-
-        messages = await chat.addMessageToList(messages,userMessage,thinkingMessage);
+        messages = await chat.addMessageToList(messages, userMessage, thinkingMessage);
         await scrollToBottom();
 
-        const assistantMessage = await chat.message.send({ message: userMessage});
+        const assistantMessage = await chat.message.send({ message: userMessage });
         lastAssistantMessageID = assistantMessage.id;
         activeFlow = assistantMessage.activeFlow;
 
@@ -132,8 +146,17 @@
 
         draft = "";
         isThinking = false;
-        await tick(); // wait for DOM to re-enable the textarea
+        await tick();
         textareaRef?.focus();
+    }
+
+    async function handleSend(event) {
+        event.preventDefault();
+        await sendMessage(draft);
+    }
+
+    async function handleOptionSelect(optionValue) {
+        await sendMessage(optionValue);
     }
 </script>
 
@@ -187,7 +210,11 @@
                     {:else if message.role === "thinking"}
                         <MessageThinking {message} />
                     {:else if message.role === "assistant"}
-                        <MessageAssistant {message} {lastAssistantMessageID} />
+                        <MessageAssistant
+                            {message}
+                            {lastAssistantMessageID}
+                            onOptionSelect={handleOptionSelect}
+                        />
                     {/if}
                 {/each}
                 <!-- {#each messages as message, index (message.id)}

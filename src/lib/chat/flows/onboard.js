@@ -23,7 +23,7 @@ export const onboardFlow = {
                 { id: "vegan", text: "Vegan" },
                 { id: "vegetarian", text: "Vegetarian" },
                 { id: "gluten_free", text: "Gluten-Free" },
-                { id: "none", text: "No Preferences" }
+                { id: "none", text: "No Preferences", button_type:"fancy" }
             ],
             transform: "onboard.capitalise",
         },
