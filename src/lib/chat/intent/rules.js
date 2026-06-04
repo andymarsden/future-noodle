@@ -116,6 +116,29 @@ export const rules = [
             };
         }
     },
+
+ {
+        id: "start-qrios-spanish",
+        permissions: ["staff"],
+        match(text) {
+            return text.startsWith("/nuevo-formulario");
+        },
+
+        extract(text) {
+            return {
+                query: text.replace(/^\/nuevo-formulario\s*/, "")
+            };
+        },
+
+        async run({ query }) {
+            return {
+                text: `qrios ${query}`,
+                //activeFlow: {id:"onboard"} qrios_form
+                activeFlow: {id:"qrios_form_spanish"}
+            };
+        }
+    },
+
     {
         id: "rugby-flow",
         permissions: ["staff"],
