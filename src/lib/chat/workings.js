@@ -63,15 +63,26 @@ export const chat = {
 }
 
 
-function buildFlowSummary(activeFlow) {
-    const answers = (activeFlow?.steps ?? [])
-        .filter((step) => typeof step?.answer !== "undefined" && step.answer !== null && String(step.answer).trim() !== "")
-        .map((step) => `- ${step.name || step.id}: ${String(step.answer)}`);
 
-    const headline = `Flow "${activeFlow?.name || activeFlow?.id || "conversation"}" completed.`;
-    const details = answers.length ? answers.join("\n") : "- No answers were captured in the flow.";
+function normalizeOptions(step) {
+    if (!Array.isArray(step?.options)) return [];
 
-    return `${headline}\n\n${details}`;
+    return step.options.map((option, index) => {
+        if (typeof option === "string") {
+            return {
+                id: `${step.id || "option"}-${index}`,
+                label: option,
+                value: option,
+            };
+        }
+
+        return {
+            id: option.id || `${step.id || "option"}-${index}`,
+            label: option.label || option.text || option.value || option.id || "Option",
+            value: option.value || option.text || option.id || option.label || "",
+            button_type: option.button_type,
+        };
+    });
 }
 
 export const flow = {
@@ -112,6 +123,7 @@ export const flow = {
         currentStep.answer = userInput; 
         
         //#region Validate and transform
+        //TODO Something.validate
         if (currentStep?.validation) {
             try {
                 await executeCommand(currentStep.validation, {
@@ -133,7 +145,7 @@ export const flow = {
         } else {
             userMessage.isValidated = true;
         }
-
+        //TODO Something.transform
         if (currentStep?.transform) {
             const transformedAnswer = await executeCommand(currentStep?.transform, {
                 answer: currentStep.answer,
@@ -149,6 +161,7 @@ export const flow = {
 
         const nextStep = this.getNextStep(activeFlow.id, activeFlow.current_step);
 
+        //#region If no next step, end the flow and save summary to memory
         if (!nextStep) {
             const summary = buildFlowSummary(activeFlow);
             const savedMemory = saveConversationMemory({
@@ -174,6 +187,7 @@ export const flow = {
                 summary,
             });
         }
+        //#endregion
 
         activeFlow.current_step = nextStep.id;
 
@@ -184,7 +198,13 @@ export const flow = {
 
 
         //let messageText = `The questions is ${nextStep.question},  You are in ${activeFlow.id}, currently at step ${activeFlow.current_step }. You said: ${userInput}.`;
-        return new Message({content: { text: nextStep.question },role: "assistant",activeFlow: activeFlow,conversationId: conversationId  });
+        return new Message({
+            content: { text: nextStep.question },
+            role: "assistant",
+            activeFlow,
+            conversationId,
+            options: normalizeOptions(nextStep),
+        });
     },
     getNextStep(flowId, currentStepId) {
         let activeFlow = this.getById(flowId);
@@ -204,7 +224,25 @@ export const flow = {
         let messageText = activeFlow.steps[0].question;
 
 
-        return new Message({content: { text: messageText },role: "assistant",activeFlow: activeFlow,conversationId: conversationId  });
+        return new Message({
+            content: { text: messageText },
+            role: "assistant",
+            activeFlow,
+            conversationId,
+            options: normalizeOptions(activeFlow.steps[0]),
+        });
     }
 
+}
+
+
+function buildFlowSummary(activeFlow) {
+    const answers = (activeFlow?.steps ?? [])
+        .filter((step) => typeof step?.answer !== "undefined" && step.answer !== null && String(step.answer).trim() !== "")
+        .map((step) => `- ${step.name || step.id}: ${String(step.answer)}`);
+
+    const headline = `Flow "${activeFlow?.name || activeFlow?.id || "conversation"}" completed.`;
+    const details = answers.length ? answers.join("\n") : "- No answers were captured in the flow.";
+
+    return `${headline}\n\n${details}`;
 }
