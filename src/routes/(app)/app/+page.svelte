@@ -2,10 +2,11 @@
     //Svelte
 
     import { onMount, tick } from "svelte";
+    import { goto } from "$app/navigation";
     import { page } from "$app/stores";
 
     //utils
-    import { formatTimestamp, wait, generateId } from "$lib/utils.js";
+    import { formatTimestamp, wait, generateId, generateShortId } from "$lib/utils.js";
 
     import AppHeader from "$lib/components/sidenav/app-header.svelte";
 
@@ -17,10 +18,12 @@
     import { Textarea } from "$lib/components/ui/textarea/index.js";
 
     //chat functionality
-    import { chat, flow } from "$lib/chat/workings";
+    import { chat } from "$lib/chat/workings";
+    import { loadConversation, saveConversation } from "$lib/services/conversation-storage";
 
     import MessageUser from "$lib/chat/components/message-user.svelte";
     import MessageAssistant from "$lib/chat/components/message-assistant.svelte";
+    import MessageQrios from "$lib/chat/components/message-qrios.svelte";
     import MessageThinking from "$lib/chat/components/message-thinking.svelte";
     import { Message } from "$lib/classes/Message";
 
@@ -37,6 +40,7 @@
     let activeFlow = $state(null);
     let conversationId = $state(null);
     let lastAssistantMessageID = $state(null);
+    let routeConversationId = $derived($page.params.conversationId ?? null);
     // let lastAssistantMessageWithOptionsIndex = $derived(
     //     messages.reduce((lastIndex, message, index) => {
     //         if (message.role === "assistant" && Array.isArray(message.options) && message.options.length > 0) {
@@ -104,12 +108,74 @@
     //#endregion
 
     //#region Lifecycle
+
+    async function startFreshConversation() {
+        conversationId = generateShortId();
+        messages = [];
+        activeFlow = null;
+        lastAssistantMessageID = null;
+
+        saveConversation(conversationId, messages, activeFlow);
+        await triggerStartupIntent();
+        await goto("/app", { replaceState: true });
+    }
+
+    async function triggerStartupIntent() {
+        const startupMessage = new Message({
+            content: { text: "/qrios-startup" },
+            role: "user",
+            conversationId,
+        });
+
+        const assistantMessage = await chat.message.send({ message: startupMessage });
+
+        messages = await chat.addMessageToList(messages, assistantMessage);
+        lastAssistantMessageID = assistantMessage.id;
+        activeFlow = assistantMessage.activeFlow ?? activeFlow;
+        saveConversation(conversationId, messages, activeFlow);
+    }
+
+//triggerFollowUpIntent
+
+async function triggerFollowUpIntent() {
+        const followUpMessage = new Message({
+            content: { text: "/qrios-followup" },
+            role: "user",
+            conversationId,
+        });
+
+        const assistantMessage = await chat.message.send({ message: followUpMessage });
+
+        messages = await chat.addMessageToList(messages, assistantMessage);
+        lastAssistantMessageID = assistantMessage.id;
+        activeFlow = assistantMessage.activeFlow ?? activeFlow;
+        saveConversation(conversationId, messages, activeFlow);
+    }
+
     onMount(async () => {
-        conversationId = generateId();
+        if (routeConversationId) {
+            conversationId = routeConversationId;
+            const stored = loadConversation(routeConversationId);
+            messages = Array.isArray(stored.messages) ? stored.messages : [];
+            activeFlow = stored.activeFlow ?? null;
+            lastAssistantMessageID = messages.filter((message) => message.role === "assistant").at(-1)?.id ?? null;
+
+            const lastMessage = messages.at(-1);
+            const isSummaryMessage =
+                lastMessage?.role === "assistant" &&
+                Array.isArray(lastMessage?.summarySections) &&
+                lastMessage.summarySections.length > 0;
+
+            if (isSummaryMessage) {
+                await triggerFollowUpIntent();
+            }
+        } else {
+            await startFreshConversation();
+        }
+
         textareaRef?.focus();
         autoResizeTextarea();
         await scrollToBottom();
-        //If we are setting up an assistant message make sure we set the lastAssistantMessageID so that the UI can scroll to it when it updates with the response.
     });
 
     //#endregion
@@ -117,6 +183,16 @@
     async function sendMessage(text) {
         const nextDraft = String(text ?? "").trim();
         if (!nextDraft || isThinking) return;
+
+        if (nextDraft === "/clear" || nextDraft === "/restart") {
+            isThinking = true;
+            await startFreshConversation();
+            draft = "";
+            isThinking = false;
+            await tick();
+            textareaRef?.focus();
+            return;
+        }
 
         isThinking = true;
 
@@ -142,6 +218,7 @@
 
         messages = await chat.updateMessage(messages, { ...userMessage }, userMessage.id);
         messages = await chat.updateMessage(messages, assistantMessage, thinkingMessage.id);
+        saveConversation(conversationId, messages, activeFlow);
         await scrollToBottom();
 
         draft = "";
@@ -162,10 +239,10 @@
 
 <AppHeader
     crumbs={[
-        { label: "Admin", href: "/app" },
-        { label: "Sandbox", href: "/app/sandbox" },
+        { label: "Sandbox", href: "/app" },
+        // { label: "Sandbox", href: "/app/sandbox" },
     ]}
-    currentPage="Porto"
+    currentPage="Qrios"
 />
 
 <main
@@ -194,10 +271,24 @@
             id="message-list"
         >
             <div
-                class="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-8 pb-24 md:px-6 md:pb-24"
+                class="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-8 md:px-6"
+                style="padding-bottom: clamp(10rem, 50vh, 24rem);"
             >
                 {#if messages.length === 0}
-                    <p class="text-muted-foreground text-sm">Loading...</p>
+                    <div class="flex items-center justify-center py-6">
+                        <!-- {#if routeConversationId}
+                            <span
+                                class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-current border-r-transparent"
+                                aria-label="Loading conversation"
+                            ></span>
+                        {:else}
+                            <p class="text-muted-foreground text-sm">Loading...</p>
+                        {/if} -->
+                         <span
+                                class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-current border-r-transparent"
+                                aria-label="Loading conversation"
+                            ></span>
+                    </div>
                 {/if}
 
                 {#each messages as message, index (message.id)}
@@ -209,6 +300,8 @@
                         <MessageAlbumCard {message} /> -->
                     {:else if message.role === "thinking"}
                         <MessageThinking {message} />
+                    {:else if message.role === "assistant" && message.summarySections?.length && String(message.flowId || "").startsWith("qrios")}
+                        <MessageQrios {message} />
                     {:else if message.role === "assistant"}
                         <MessageAssistant
                             {message}

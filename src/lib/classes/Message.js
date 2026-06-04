@@ -12,6 +12,8 @@ export class Message {
     isValidated = null,
     memoryId = null,
     summary = null,
+    summarySections = [],
+    flowId = null,
   } = {}) {
     if (!conversationId) {
       throw new Error("conversationId is required");
@@ -27,6 +29,8 @@ export class Message {
     this.isValidated = isValidated;
     this.memoryId = memoryId;
     this.summary = summary;
+    this.summarySections = summarySections;
+    this.flowId = flowId;
   }
 }
 

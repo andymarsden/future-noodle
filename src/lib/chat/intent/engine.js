@@ -1,9 +1,48 @@
 //intent engine
+import { Message } from "$lib/classes/Message";
 import { rules } from "./rules.js";
+
+function normalizeOptions(options) {
+    if (!Array.isArray(options)) return [];
+
+    return options.map((option, index) => ({
+        id: option?.id ?? `${index}`,
+        label: option?.label ?? option?.text ?? option?.value ?? option?.id ?? "",
+        value: option?.value ?? option?.id ?? option?.text ?? option?.label ?? "",
+        button_type: option?.button_type,
+        ...option,
+    }));
+}
+
+//Converts various response formats into a standardized Message instance
+function toMessage(response, conversationId) {
+    if (response instanceof Message) {
+        return response;
+    }
+
+    if (response && typeof response === "object" && "content" in response) {
+        return new Message({
+            ...response,
+            conversationId: response.conversationId ?? conversationId ?? "intent",
+            content: response.content ?? { text: "" },
+            role: response.role ?? "assistant",
+            activeFlow: response.activeFlow ?? null,
+            options: normalizeOptions(response.options),
+        });
+    }
+
+    return new Message({
+        conversationId: conversationId ?? "intent",
+        role: "assistant",
+        content: typeof response === "object" && response !== null ? response : { text: response ?? "" },
+        activeFlow: response?.activeFlow ?? null,
+        options: normalizeOptions(response?.options),
+    });
+}
 
 export const intent = {
 
-    async detect(text) {
+    async detect(text, conversationId = null) {
         const normalized = text.trim().toLowerCase();
 
         const intent = rules.find(intent =>
@@ -32,7 +71,7 @@ export const intent = {
                 error: null,
                 intent: intent.id,
                 payload,
-                content: response
+                content: toMessage(response, conversationId)
             };
         } catch (error) {
             return {

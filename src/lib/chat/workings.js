@@ -7,6 +7,10 @@ import { flowRegistry } from "$lib/chat/flows/engine";
 import { executeCommand } from "$lib/chat/commands/execute";
 import { saveConversationMemory } from "$lib/services/conversation-memory";
 
+const SECTION_SKIP_TOKEN = "__skip_section__";
+const SECTION_SKIP_OPTION_ID = "skip-section";
+const SECTION_SKIP_OPTION_LABEL = "Skip section";
+
 export const chat = {
     message: {
         async send({ message } = {}) {
@@ -23,21 +27,26 @@ export const chat = {
                     return new Message({content: { text: "Please enter a message." },role: "assistant",activeFlow: message?.activeFlow ?? null,conversationId: message?.conversationId ?? null  });
                 }
  
-                const response = await intent.detect(message.content.text);
+                const response = await intent.detect(message.content.text, message?.conversationId ?? null);
 
                 //TODO no intent - try AI response? or just default answer? maybe a fallback intent that always matches?
 
+                const assistantMessage = response.content instanceof Message
+                    ? response.content
+                    : new Message({
+                        content: response.content ?? { text: "" },
+                        role: "assistant",
+                        activeFlow: response.content?.activeFlow ?? null,
+                        conversationId: message?.conversationId ?? null,
+                        options: response.content?.options ?? [],
+                    });
+
                 //did the intent trigger an flow?
-                if(response.content?.activeFlow)
-                {
-                    return flow.start(response.content.activeFlow.id, message?.conversationId ?? null);
+                if (assistantMessage.activeFlow) {
+                    return await flow.start(assistantMessage.activeFlow.id, assistantMessage.conversationId ?? null);
                 }
-                else
-                {
-                    const text = response.success ? response.content?.text || "" : response.error?.message || "Something went wrong.";
-                
-                    return new Message({content: { text: text },role: "assistant",activeFlow: response.content?.activeFlow,conversationId: message?.conversationId ?? null});
-                }
+
+                return assistantMessage;
             }
             else
             {
@@ -69,10 +78,13 @@ function normalizeOptions(step) {
 
     return step.options.map((option, index) => {
         if (typeof option === "string") {
+            const isSkipOption = option.trim().toLowerCase() === "[z] skip";
+
             return {
                 id: `${step.id || "option"}-${index}`,
                 label: option,
                 value: option,
+                button_type: isSkipOption ? "secondary" : undefined,
             };
         }
 
@@ -83,6 +95,28 @@ function normalizeOptions(step) {
             button_type: option.button_type,
         };
     });
+}
+
+function withSectionSkipOption(step, options) {
+    if (!step?.isSectionStart) {
+        return options;
+    }
+
+    const hasSkipSectionOption = options.some((option) => option?.value === SECTION_SKIP_TOKEN);
+
+    if (hasSkipSectionOption) {
+        return options;
+    }
+
+    return [
+        ...options,
+        {
+            id: `${step.id || SECTION_SKIP_OPTION_ID}-section-skip`,
+            label: SECTION_SKIP_OPTION_LABEL,
+            value: SECTION_SKIP_TOKEN,
+            button_type: "secondary",
+        },
+    ];
 }
 
 export const flow = {
@@ -120,6 +154,65 @@ export const flow = {
         if (!currentStep) {
             return new Message({content: { text: "This flow step could not be found." },role: "assistant",activeFlow: activeFlow,conversationId: conversationId  });
         }
+
+        if (userInput === SECTION_SKIP_TOKEN && currentStep?.isSectionStart) {
+            const currentIndex = activeFlow.steps.findIndex((step) => step.id === currentStep.id);
+            const nextSectionStartIndex = activeFlow.steps.findIndex((step, index) => index > currentIndex && step.isSectionStart);
+            const skipEndIndex = nextSectionStartIndex === -1 ? activeFlow.steps.length : nextSectionStartIndex;
+
+            for (let index = currentIndex; index < skipEndIndex; index += 1) {
+                activeFlow.steps[index].answer = "";
+            }
+
+            userMessage.isValidated = true;
+            userMessage.content.text = SECTION_SKIP_OPTION_LABEL;
+
+            if (nextSectionStartIndex === -1) {
+                const summary = buildFlowSummary(activeFlow);
+                const isQriosFlow = String(activeFlow?.id || "").startsWith("qrios");
+                const summarySections = isQriosFlow ? buildFlowSectionSummary(activeFlow) : [];
+                const savedMemory = saveConversationMemory({
+                    id: conversationId,
+                    flowId: activeFlow?.id ?? null,
+                    flowName: activeFlow?.name ?? null,
+                    summary,
+                    answers: (activeFlow?.steps ?? [])
+                        .filter((step) => typeof step.answer !== "undefined" && step.answer !== null)
+                        .map((step) => ({
+                            id: step.id,
+                            name: step.name || step.id,
+                            answer: step.answer,
+                        })),
+                });
+
+                return new Message({
+                    content: {
+                        text: `This flow is finished.\n\nSummary saved to temporary memory with ID ${savedMemory.id}.`,
+                    },
+                    role: "assistant",
+                    activeFlow: null,
+                    conversationId,
+                    memoryId: savedMemory.id,
+                    summary,
+                    summarySections,
+                    flowId: activeFlow?.id ?? null,
+                });
+            }
+
+            activeFlow.current_step = activeFlow.steps[nextSectionStartIndex].id;
+
+            return new Message({
+                content: { text: activeFlow.steps[nextSectionStartIndex].question },
+                role: "assistant",
+                activeFlow,
+                conversationId,
+                options: withSectionSkipOption(
+                    activeFlow.steps[nextSectionStartIndex],
+                    normalizeOptions(activeFlow.steps[nextSectionStartIndex]),
+                ),
+            });
+        }
+
         currentStep.answer = userInput; 
         
         //#region Validate and transform
@@ -151,21 +244,43 @@ export const flow = {
                 answer: currentStep.answer,
                 stepId: currentStep.id,
             });
+            const normalizedTransformedAnswer =
+                transformedAnswer && typeof transformedAnswer === "object" && "data" in transformedAnswer
+                    ? transformedAnswer.data
+                    : transformedAnswer;
+
+            if (normalizedTransformedAnswer !== null && typeof normalizedTransformedAnswer !== "undefined") {
+                currentStep.answer = normalizedTransformedAnswer;
+                userMessage.content.text = String(normalizedTransformedAnswer);
+            }
+
             console.log('User Message',userMessage);
             console.log('Transformed Answer',transformedAnswer);
-            userMessage.content.text = transformedAnswer;
         }
         //#endregion
         
-        
+
+
+        let commandResult = null;
+
+        if (currentStep?.command) {
+            commandResult = await executeCommand(currentStep.command, {
+                answer: currentStep.answer,
+                stepId: currentStep.id,
+                step: currentStep,
+                flow: activeFlow,
+            });
+        }
 
         const nextStep = this.getNextStep(activeFlow.id, activeFlow.current_step);
 
         //#region If no next step, end the flow and save summary to memory
         if (!nextStep) {
             const summary = buildFlowSummary(activeFlow);
+            const isQriosFlow = String(activeFlow?.id || "").startsWith("qrios");
+            const summarySections = isQriosFlow ? buildFlowSectionSummary(activeFlow) : [];
             const savedMemory = saveConversationMemory({
-                conversationId,
+                id:conversationId,
                 flowId: activeFlow?.id ?? null,
                 flowName: activeFlow?.name ?? null,
                 summary,
@@ -178,13 +293,15 @@ export const flow = {
 
             return new Message({
                 content: {
-                    text: `This flow is finished.\n\nSummary saved to temporary memory with ID ${savedMemory.id}.\n\n${summary}`,
+                    text: `This flow is finished.\n\nSummary saved to temporary memory with ID ${savedMemory.id}.`,
                 },
                 role: "assistant",
                 activeFlow: null,
                 conversationId,
                 memoryId: savedMemory.id,
                 summary,
+                summarySections,
+                flowId: activeFlow?.id ?? null,
             });
         }
         //#endregion
@@ -196,14 +313,22 @@ export const flow = {
         //action:
 
 
+console.log("Command Result", commandResult);
+        const messageText = typeof commandResult?.pre_text === "string" && commandResult.pre_text.trim().length > 0
+            ? `${commandResult.pre_text.trim()}\n\n${nextStep.question}`
+            : nextStep.question;
 
-        //let messageText = `The questions is ${nextStep.question},  You are in ${activeFlow.id}, currently at step ${activeFlow.current_step }. You said: ${userInput}.`;
+        if (commandResult?.data !== null && typeof commandResult?.data !== "undefined") {
+            currentStep.answer = commandResult.data;
+            userMessage.content.text = String(commandResult.data);
+        }
+
         return new Message({
-            content: { text: nextStep.question },
+            content: { text: messageText },
             role: "assistant",
             activeFlow,
             conversationId,
-            options: normalizeOptions(nextStep),
+            options: withSectionSkipOption(nextStep, normalizeOptions(nextStep)),
         });
     },
     getNextStep(flowId, currentStepId) {
@@ -216,10 +341,14 @@ export const flow = {
 
         return activeFlow.steps[currentIndex + 1] || null;
     },
-    start(id, conversationId) {
+    async start(id, conversationId) {
 
         let activeFlow = this.getById(id);
         activeFlow.current_step = activeFlow.steps[0].id;
+
+        if (conversationId) {
+            await executeCommand("onboard.updateConversationRoute", { conversationId });
+        }
 
         let messageText = activeFlow.steps[0].question;
 
@@ -229,7 +358,7 @@ export const flow = {
             role: "assistant",
             activeFlow,
             conversationId,
-            options: normalizeOptions(activeFlow.steps[0]),
+            options: withSectionSkipOption(activeFlow.steps[0], normalizeOptions(activeFlow.steps[0])),
         });
     }
 
@@ -245,4 +374,49 @@ function buildFlowSummary(activeFlow) {
     const details = answers.length ? answers.join("\n") : "- No answers were captured in the flow.";
 
     return `${headline}\n\n${details}`;
+}
+
+function buildFlowSectionSummary(activeFlow) {
+    const sections = new Map();
+
+    for (const step of activeFlow?.steps ?? []) {
+        if (typeof step?.answer === "undefined" || step.answer === null) continue;
+
+        const answerText = String(step.answer).trim();
+        if (!answerText) continue;
+
+        const sectionId = step.section || "general";
+
+        if (!sections.has(sectionId)) {
+            sections.set(sectionId, {
+                id: sectionId,
+                title: formatSectionLabel(sectionId),
+                answers: [],
+            });
+        }
+
+        sections.get(sectionId).answers.push({
+            id: step.id,
+            label: formatStepLabel(step),
+            answer: answerText,
+        });
+    }
+
+    return Array.from(sections.values());
+}
+
+function formatSectionLabel(sectionId) {
+    return String(sectionId)
+        .split("_")
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(" ");
+}
+
+function formatStepLabel(step) {
+    if (step?.name) return step.name;
+
+    return String(step?.id || "question")
+        .split("_")
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(" ");
 }

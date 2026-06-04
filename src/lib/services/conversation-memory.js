@@ -25,9 +25,26 @@ function writeAllMemories(memories) {
 	return memories;
 }
 
+function generateCode() {
+    const letters = "abcdefghijklmnpqrstuvwxyz";
+    const chars = "abcdefghijklmnpqrstuvwxyz";
+
+    const randomLetter = () => letters[Math.floor(Math.random() * letters.length)];
+    const randomDigit = () => Math.floor(Math.random() * 10);
+    const randomChar = () => chars[Math.floor(Math.random() * chars.length)];
+
+    return (
+        randomLetter() +
+        randomLetter() +
+        randomDigit() +
+        randomDigit() +
+        randomChar()
+    );
+} 
+
 export function saveConversationMemory(entry = {}) {
 	const memory = {
-		id: entry.id ?? generateId(),
+		id: entry.id ?? generateCode(),
 		conversationId: entry.conversationId ?? null,
 		flowId: entry.flowId ?? null,
 		flowName: entry.flowName ?? null,
