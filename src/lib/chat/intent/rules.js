@@ -44,10 +44,9 @@ export const rules = [
                     text: message || "Welcome to QRIOS what would you like to do today?"
                 },
                 options: [
-                    { id: "qrios", label: "New form", value: "qrios" },
-                    { id: "vegetarian", label: "Follow Up", value: "/follow-up" },
+                    { id: "qrios", label: "New form", value: "qrios", button_type: "fancy"  },
                     { id: "gluten_free", label: "Nuevo formulario", value: "/nuevo-formulario" },
-                    { id: "none", label: "View Data", value: "/view_data", button_type: "fancy" }
+                    { id: "none", label: "View Data", value: "/view_data" }
                 ],
                 type: "qrios-startup"
             };
@@ -75,7 +74,7 @@ export const rules = [
                 },
                 options: [
                     { id: "qrios", label: "New form", value: "qrios" },
-                    { id: "vegetarian", label: "Follow Up", value: "/follow-up", button_type: "fancy" },
+                    { id: "vegetarian", label: "Follow Up", value: "qrios", button_type: "fancy" },
                 ]
             };
         }
