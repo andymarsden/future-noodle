@@ -1,3 +1,5 @@
+import { command } from "$app/server";
+
 export const qriosFormFlow = {
     id: "qrios_form",
 
@@ -28,7 +30,8 @@ export const qriosFormFlow = {
             id:"reason_for_visit",
             name: "Reason for Visit",
             question: "What brought you to the talking point today?",
-            transform: "util.classifyText",
+            //transform: "util.classifyText",
+            command: "util.getAdvice",
             options: ["[z] Skip"],
             section: "details"
         },
