@@ -1,5 +1,6 @@
 import * as chrono from "chrono-node";
 const POSTCODE_LOOKUP_API = "https://infojam.app.n8n.cloud/webhook/8b3f24d0-1cfd-457f-ab50-431eb33ab5df";
+const TEXT_CLASSIFICATION_API = "https://infojam.app.n8n.cloud/webhook/c2094744-fe0d-4764-9b1e-cf11e06f0387";
 export const utilCommands = {
     async textToDate(text) {
 
@@ -16,6 +17,37 @@ export const utilCommands = {
         }
 
         return parsedDate.toISOString().slice(0, 10);
+    },
+
+    async classifyText(payload) {
+        console.log("classifyText command called with payload:", payload);
+
+        const text = `${payload.answer || payload.text || ""}`.trim();
+
+        if (!text) {
+            return "";
+        }
+
+        try {
+            const response = await fetch(TEXT_CLASSIFICATION_API, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ text }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Text classification failed with status ${response.status}`);
+            }
+
+            const responseBody = await response.json();
+            const tags = Array.isArray(responseBody?.tags) ? responseBody.tags : [];
+            return tags.join(", ");
+        } catch (error) {
+            console.warn("classifyText failed:", error);
+            return "";
+        }
     },
 
     async getPostcodeInfo(payload) {

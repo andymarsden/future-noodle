@@ -28,6 +28,7 @@ export const qriosFormFlow = {
             id:"reason_for_visit",
             name: "Reason for Visit",
             question: "What brought you to the talking point today?",
+            transform: "util.classifyText",
             options: ["[z] Skip"],
             section: "details"
         },
