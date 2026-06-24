@@ -1,6 +1,6 @@
 // place files you want to import through the `$lib` alias in this folder.
 /**
- * Returns the first 8 characters of a string, or empty string if not a string
+ * Returns the first 9 characters of a string, or empty string if not a string
  * @param {*} input
  * @returns {string}
  */
@@ -8,7 +8,7 @@ export function shortId(input) {
   if (typeof input !== "string") {
     return "";
   }
-  return input.slice(0, 8);
+  return input.slice(0, 9);
 }
 
 /**

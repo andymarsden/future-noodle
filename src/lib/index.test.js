@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import { shortId, parseDate } from "./index.js";
 
 describe("lib/index utilities", () => {
-  it("returns the first 8 chars for a string", () => {
-    expect(shortId("future-noodle")).toBe("future-n");
+  it("returns the first 9 chars for a string", () => {
+    expect(shortId("future-noodle")).toBe("future-no");
   });
 
   it("returns an empty string for non-string input", () => {
