@@ -1,11 +1,13 @@
 export const barnsleyFlow = {
-
     id: "barnsley",
-    name: "Barnsley Flow",
-    description: "A Barnsley flow",
-    index: 0,
-    name: "Ask Question",
-    question: "What can we help you with today?",
-    command: "util.getAdvice",
-    
-        }
+    name: "Barnsley Search Flow",
+    description: "Barnsley search flow",
+    steps: [
+        {
+            id: "barnsley",
+            index: 0,
+            name: "barnsley",
+            question: "What can we help you with today?",
+            command: "util.getAdvice",
+        }]
+}

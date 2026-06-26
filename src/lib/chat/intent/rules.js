@@ -185,5 +185,24 @@ export const rules = [
                 activeFlow: {id:"rugby"}
             };
         }
+    },
+    {
+        id: "barnsley-flow",
+        match(text) {
+            return text.startsWith("barnsley");
+        },
+
+        extract(text) {
+            return {
+                //query: text.replace(/^qrios\s+/, "")
+            };
+        },
+
+        async run({ query }) {
+            return {
+                //text: `qrios ${query}`,
+                activeFlow: {id:"barnsley"}
+            };
+        }
     }
 ];
