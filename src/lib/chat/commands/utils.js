@@ -2,6 +2,8 @@ import * as chrono from "chrono-node";
 const POSTCODE_LOOKUP_API = "https://infojam.app.n8n.cloud/webhook/8b3f24d0-1cfd-457f-ab50-431eb33ab5df";
 const TEXT_CLASSIFICATION_API = "https://infojam.app.n8n.cloud/webhook/c2094744-fe0d-4764-9b1e-cf11e06f0387";
 const ADVICE_API = "https://infojam.app.n8n.cloud/webhook/81e0373b-b53c-42b9-9049-ddb66e5a0dcf";
+const BARNSLEY_SEARCH = "https://infojam.app.n8n.cloud/webhook/c1bec63f-e2c4-4f37-b634-6d0b2f8ede89";
+
 export const utilCommands = {
     async textToDate(text) {
 
@@ -86,10 +88,10 @@ export const utilCommands = {
             } else {
                 advice = await response.text();
             }
-const rtext = `${payload.answer || payload.text || ""}`.trim();
+            const rtext = `${payload.answer || payload.text || ""}`.trim();
             return {
                 pre_text: "Some advice: \n" + JSON.parse(advice.trim()).advise + "\n\n",
-                data: rtext +"\n\n tags: " + await utilCommands.classifyText(payload),
+                data: rtext + "\n\n tags: " + await utilCommands.classifyText(payload),
             };
         } catch (error) {
             console.warn("getAdvice failed:", error);
@@ -139,5 +141,38 @@ const rtext = `${payload.answer || payload.text || ""}`.trim();
                 data: payload.answer,
             };
         }
+    },
+    async getBarnsleySearch(payload) {
+
+        let text = payload.answer;
+
+        const response = await fetch(BARNSLEY_SEARCH, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ text }),
+            });
+
+        let responseBody = await response.json();
+        let data = responseBody[0].choices[0].message.content;
+        console.log("getBarnsleySearch response:", data);
+
+        return {
+                pre_text: data,
+                data: payload.answer,
+            };
+
+        
+        // if (!response.ok) {
+        //     throw new Error(`Barnsley search failed with status ${response.status}`);
+        // }
+
+        // const responseBody = await response.json();
+        // console.log("getBarnsleySearch response:", responseBody);
+        // return responseBody;
     }
 };
+
+
+
