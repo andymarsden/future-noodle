@@ -36,6 +36,7 @@
 				Export to PDF
 			</Button>
 		</div>
+            <Separator class="mt-4 mb-0" />
 	</Card.Header>
 
 	<Card.Content class="space-y-8">
@@ -49,20 +50,23 @@
 
 			<div class="space-y-3">
 				<div>
-					<p class="text-sm text-muted-foreground">Hub attended</p>
-					<p>The Cottage</p>
-				</div>
-
-				<div>
-					<p class="text-sm text-muted-foreground">Date attended</p>
-					<p>29 June 2026</p>
-				</div>
-
-				<div>
-					<p class="text-sm text-muted-foreground">Reason for visit</p>
 					<p>
-						This is where a much longer answer can go. It will wrap
-						naturally onto multiple lines without breaking the layout.
+	                <span class="font-medium text-muted-foreground">Hub attended:</span>
+	                <span class="font-medium text-foreground"> The Cottage</span>
+                    </p>
+				</div>
+
+				<div>
+					<p>
+						<span class="font-medium text-muted-foreground">Date attended:</span>
+						<span class="font-medium text-foreground"> 29 June 2026</span>
+					</p>
+				</div>
+
+				<div>
+					<p>
+						<span class="font-medium text-muted-foreground">Reason for visit:</span>
+						<span class="font-medium text-foreground"> This is where a much longer answer can go. It will wrap naturally onto multiple lines without breaking the layout.</span>
 					</p>
 				</div>
 			</div>
@@ -79,18 +83,24 @@
 
 			<div class="space-y-3">
 				<div>
-					<p class="text-sm text-muted-foreground">Age Band</p>
-					<p>25–34</p>
+					<p>
+						<span class="font-medium text-muted-foreground">Age band:</span>
+						<span class="font-medium text-foreground"> 25–34</span>
+					</p>
 				</div>
 
 				<div>
-					<p class="text-sm text-muted-foreground">Gender</p>
-					<p>Female</p>
+					<p>
+						<span class="font-medium text-muted-foreground">Gender:</span>
+						<span class="font-medium text-foreground"> Female</span>
+					</p>
 				</div>
 
 				<div>
-					<p class="text-sm text-muted-foreground">Ethnicity</p>
-					<p>White British</p>
+					<p>
+						<span class="font-medium text-muted-foreground">Ethnicity:</span>
+						<span class="font-medium text-foreground"> White British</span>
+					</p>
 				</div>
 			</div>
 		</section>
@@ -106,37 +116,16 @@
 
 			<div class="space-y-3">
 				<div>
-					<p class="text-sm text-muted-foreground">How are you coping?</p>
-					<p>Good</p>
-				</div>
-
-				<div>
-					<p class="text-sm text-muted-foreground">Do you feel supported?</p>
-					<p>Yes</p>
-				</div>
-			</div>
-		</section>
-
-		<Separator class="my-6" />
-
-		<!-- Experience -->
-		<section class="space-y-4">
-			<div class="flex items-center gap-2">
-				<MessageSquare class="h-5 w-5" />
-				<h2 class="text-lg font-semibold">Experience</h2>
-			</div>
-
-			<div class="space-y-3">
-				<div>
-					<p class="text-sm text-muted-foreground">Venue accessibility</p>
-					<p>Excellent</p>
-				</div>
-
-				<div>
-					<p class="text-sm text-muted-foreground">Comments</p>
 					<p>
-						The staff were extremely helpful and explained everything
-						clearly. The environment was welcoming and easy to access.
+						<span class="font-medium text-muted-foreground">How are you coping?</span>
+						<span class="font-medium text-foreground"> Good</span>
+					</p>
+				</div>
+
+				<div>
+					<p>
+						<span class="font-medium text-muted-foreground">Do you feel supported?</span>
+						<span class="font-medium text-foreground"> Yes</span>
 					</p>
 				</div>
 			</div>
@@ -153,15 +142,42 @@
 
 			<div class="space-y-3">
 				<div>
-					<p class="text-sm text-muted-foreground">Actions</p>
 					<p>
-						Information, Advice and Guidance Offered<br />
+						<span class="font-medium text-muted-foreground">Actions:</span>
+						<span class="font-medium text-foreground"> Information, Advice and Guidance Offered<br />
 						Connection to other Council Service<br />
-						No Further Action
+						No Further Action</span>
 					</p>
 				</div>
 			</div>
 		</section>
+
+        <Separator class="my-6" />
+
+        		<!-- Experience -->
+		<section class="space-y-4">
+			<div class="flex items-center gap-2">
+				<MessageSquare class="h-5 w-5" />
+				<h2 class="text-lg font-semibold">Experience</h2>
+			</div>
+
+			<div class="space-y-3">
+				<div>
+					<p>
+						<span class="font-medium text-muted-foreground">Venue accessibility:</span>
+						<span class="font-medium text-foreground"> Excellent</span>
+					</p>
+				</div>
+
+				<div>
+					<p>
+						<span class="font-medium text-muted-foreground">Comments:</span>
+						<span class="font-medium text-foreground"> The staff were extremely helpful and explained everything clearly. The environment was welcoming and easy to access.</span>
+					</p>
+				</div>
+			</div>
+		</section>
+
 
 	</Card.Content>
 </Card.Root>
