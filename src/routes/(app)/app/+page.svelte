@@ -23,8 +23,8 @@
 
     import MessageUser from "$lib/chat/components/message-user.svelte";
     import MessageAssistant from "$lib/chat/components/message-assistant.svelte";
-    import MessageQrios from "$lib/chat/components/message-qrios.svelte";
     import MessageThinking from "$lib/chat/components/message-thinking.svelte";
+    import QriosSummary from "$lib/components/QriosSummary.svelte";
     import { Message } from "$lib/classes/Message";
 
     //#region Layout limits
@@ -301,7 +301,7 @@ async function triggerFollowUpIntent() {
                     {:else if message.role === "thinking"}
                         <MessageThinking {message} />
                     {:else if message.role === "assistant" && message.summarySections?.length && String(message.flowId || "").startsWith("qrios")}
-                        <MessageQrios {message} />
+                        <QriosSummary {message} />
                     {:else if message.role === "assistant"}
                         <MessageAssistant
                             {message}
