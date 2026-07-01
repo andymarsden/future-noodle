@@ -51,7 +51,7 @@
 	</Card.Header>
 
 	<Card.Content class="space-y-8">
-		{#if summaryText}
+		{#if summaryText && summarySections.length === 0}
 			<div class="rounded-xl border bg-muted/20 p-4 text-sm text-muted-foreground whitespace-pre-wrap">
 				{summaryText}
 			</div>
