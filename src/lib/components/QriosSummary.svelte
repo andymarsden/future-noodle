@@ -20,6 +20,89 @@
 	);
 	let summarySections = $derived(Array.isArray(message?.summarySections) ? message.summarySections : []);
 	let summaryText = $derived(typeof message?.summary === "string" ? message.summary : "");
+	let isDownloading = $state(false);
+
+	async function downloadSummaryPdf() {
+		if (!message?.conversationId) return;
+
+		isDownloading = true;
+
+		try {
+			const { jsPDF } = await import("jspdf");
+			const QRCode = (await import("qrcode")).default;
+			const doc = new jsPDF({ unit: "pt", format: "a4" });
+			const pageWidth = doc.internal.pageSize.getWidth();
+			const pageHeight = doc.internal.pageSize.getHeight();
+			const marginX = 48;
+			const maxWidth = pageWidth - marginX * 2;
+			let cursorY = 56;
+
+			const ensureSpace = (requiredHeight = 24) => {
+				if (cursorY + requiredHeight <= pageHeight - 48) return;
+				doc.addPage();
+				cursorY = 56;
+			};
+
+			const writeBlock = (text, options = {}) => {
+				const {
+					fontSize = 11,
+					fontStyle = "normal",
+					lineHeight = 16,
+					gapAfter = 8,
+				} = options;
+
+				doc.setFont("helvetica", fontStyle);
+				doc.setFontSize(fontSize);
+				const lines = doc.splitTextToSize(String(text ?? ""), maxWidth);
+				ensureSpace(lines.length * lineHeight + gapAfter);
+				doc.text(lines, marginX, cursorY);
+				cursorY += lines.length * lineHeight + gapAfter;
+			};
+
+			writeBlock("QRIOS Summary", { fontSize: 18, fontStyle: "bold", lineHeight: 22, gapAfter: 12 });
+			writeBlock(`Conversation ID: ${message.conversationId}`, { fontSize: 10, gapAfter: 4 });
+			writeBlock(`Conversation URL: ${conversationUrl}`, { fontSize: 10, gapAfter: 16 });
+
+			if (summaryText && summarySections.length === 0) {
+				writeBlock(summaryText, { fontSize: 11, lineHeight: 15, gapAfter: 16 });
+			}
+
+			if (summarySections.length) {
+				for (const section of summarySections) {
+					writeBlock(section.title, { fontSize: 13, fontStyle: "bold", lineHeight: 18, gapAfter: 10 });
+
+					for (const item of section.answers ?? []) {
+						writeBlock(item.label, { fontSize: 10, fontStyle: "bold", lineHeight: 14, gapAfter: 4 });
+						writeBlock(item.answer, { fontSize: 11, lineHeight: 16, gapAfter: 10 });
+					}
+				}
+			} else if (!summaryText) {
+				writeBlock("No answers were captured.", { fontSize: 11 });
+			}
+
+			const qrDataUrl = await QRCode.toDataURL(conversationUrl, {
+				margin: 1,
+				width: 256,
+			});
+
+			const qrSize = 110;
+			const qrX = (pageWidth - qrSize) / 2;
+			const qrY = pageHeight - 48 - qrSize;
+
+			if (cursorY > qrY - 48) {
+				doc.addPage();
+			}
+
+			doc.setFont("helvetica", "normal");
+			doc.setFontSize(10);
+			doc.text("Scan to open this conversation", pageWidth / 2, qrY - 10, { align: "center" });
+			doc.addImage(qrDataUrl, "PNG", qrX, qrY, qrSize, qrSize);
+
+			doc.save(`qrios-summary-${message.conversationId}.pdf`);
+		} finally {
+			isDownloading = false;
+		}
+	}
 </script>
 
 <Card.Root class="mx-auto w-full max-w-4xl">
@@ -42,9 +125,13 @@
 				</div>
 			</div>
 
-			<Button class="bg-green-600 text-white hover:bg-green-700">
+			<Button
+				class="bg-green-600 text-white hover:bg-green-700"
+				onclick={downloadSummaryPdf}
+				disabled={isDownloading}
+			>
 				<FileDown class="mr-2 h-4 w-4" />
-				Export to PDF
+				{isDownloading ? "Preparing PDF..." : "Export to PDF"}
 			</Button>
 		</div>
 		<Separator class="mt-4 mb-0" />

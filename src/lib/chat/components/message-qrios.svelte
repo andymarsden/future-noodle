@@ -45,6 +45,10 @@
 			writeBlock(`Conversation ID: ${message.conversationId}`, { fontSize: 10, gapAfter: 4 });
 			writeBlock(`Conversation URL: ${conversationUrl}`, { fontSize: 10, gapAfter: 16 });
 
+			if (message.summary && !message.summarySections?.length) {
+				writeBlock(message.summary, { fontSize: 11, lineHeight: 15, gapAfter: 16 });
+			}
+
 			if (message.summarySections?.length) {
 				for (const section of message.summarySections) {
 					writeBlock(section.title, { fontSize: 13, fontStyle: "bold", lineHeight: 18, gapAfter: 10 });
@@ -54,7 +58,7 @@
 						writeBlock(item.answer, { fontSize: 11, lineHeight: 16, gapAfter: 10 });
 					}
 				}
-			} else {
+			} else if (!message.summary) {
 				writeBlock("No answers were captured.", { fontSize: 11 });
 			}
 
