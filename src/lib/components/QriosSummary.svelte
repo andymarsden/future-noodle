@@ -164,12 +164,10 @@
 
 				<div class="space-y-3">
 					{#each section.answers ?? [] as item (item.id)}
-						<div>
-							<p>
-								<span class="font-medium text-muted-foreground">{item.label}</span>
-								<span class="font-medium text-foreground"> {item.answer}</span>
-							</p>
-						</div>
+   						 <div class="space-y-1">
+       					 <p class="font-medium text-muted-foreground">{item.label}</p>
+       					 <p class="font-medium text-foreground">{item.answer}</p>
+    			</div>
 					{/each}
 				</div>
 				</section>
